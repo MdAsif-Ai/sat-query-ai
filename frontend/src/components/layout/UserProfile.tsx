@@ -2,11 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { ChevronDown, User } from 'lucide-react';
 import Link from 'next/link';
 
 export function UserProfile() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -48,9 +48,9 @@ export function UserProfile() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 rounded-lg glass-panel p-1.5 shadow-2xl border border-white/10 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="px-3 py-2 border-b border-white/5 mb-1.5 sm:hidden">
+          <div className="px-3 py-2 border-b border-white/5 mb-1.5">
             <div className="text-xs font-semibold text-white/95">{user.name}</div>
-            <div className="text-[10px] text-zinc-400">{user.role}</div>
+            <div className="text-[10px] text-zinc-400">{user.email || user.role}</div>
           </div>
           
           <Link
@@ -61,27 +61,6 @@ export function UserProfile() {
             <User size={14} className="text-zinc-400" />
             Profile
           </Link>
-          <Link
-            href="/settings"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 text-xs text-zinc-300 hover:text-white rounded-md hover:bg-white/5 transition-colors"
-          >
-            <Settings size={14} className="text-zinc-400" />
-            Settings
-          </Link>
-          
-          <div className="h-px bg-white/5 my-1.5" />
-          
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              logout();
-            }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-400 hover:text-red-300 rounded-md hover:bg-red-500/10 transition-colors text-left cursor-pointer"
-          >
-            <LogOut size={14} />
-            Logout
-          </button>
         </div>
       )}
     </div>

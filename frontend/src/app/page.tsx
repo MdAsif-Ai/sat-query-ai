@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { ClayButton } from '@/components/ui/ClayButton';
 import { RotatingEarth } from '@/components/landing/RotatingEarth';
 import { 
-  Search, 
-  ShoppingBag, 
   ArrowRight, 
   BookOpen, 
   Compass, 
@@ -18,30 +16,17 @@ import {
   Target, 
   GitBranch, 
   Orbit, 
-  Sparkles,
-  Satellite,
-  Radio,
-  ExternalLink
+  Sparkles
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-
-  // Load theme on mount
+  // Respect saved theme on mount if previously toggled
   useEffect(() => {
     const savedTheme = localStorage.getItem('satquery_theme') as 'dark' | 'light' | null;
     if (savedTheme) {
-      setTheme(savedTheme);
       document.documentElement.classList.toggle('light', savedTheme === 'light');
     }
   }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    localStorage.setItem('satquery_theme', nextTheme);
-    document.documentElement.classList.toggle('light', nextTheme === 'light');
-  };
 
   const capabilities = [
     {
@@ -98,47 +83,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Center: Navigation links */}
-        <div className="hidden md:flex items-center gap-8 text-xs font-medium uppercase tracking-widest text-zinc-400">
-          <Link href="/dashboard" className="hover:text-white transition-colors">catalogue</Link>
-          <a href="#capabilities" className="hover:text-white transition-colors">capabilities</a>
-          <Link href="/login" className="hover:text-white transition-colors">station</Link>
-          <a href="#footer" className="hover:text-white transition-colors">documentation</a>
-        </div>
-
-        {/* Right Side: Theme toggler & Authentication links */}
+        {/* Right Side: Authentication links */}
         <div className="flex items-center gap-4">
-          {/* Day/Night Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            title={theme === 'light' ? 'Switch to Night Mode' : 'Switch to Day Mode'}
-            className="relative w-13 h-6.5 rounded-full flex items-center p-0.5 cursor-pointer select-none transition-all duration-300 border border-white/10 glass-panel-light shrink-0"
-            style={{
-              background: theme === 'light' 
-                ? 'linear-gradient(to right, rgba(255,255,255,0.9), rgba(125,211,252,0.5))' 
-                : 'rgba(7, 10, 18, 0.8)',
-              boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.1)'
-            }}
-          >
-            <div
-              className="h-5 w-5 rounded-full flex items-center justify-center transition-all duration-300 transform"
-              style={{
-                transform: theme === 'light' ? 'translateX(24px)' : 'translateX(0px)',
-                background: theme === 'light' ? '#f59e0b' : '#312e81',
-                boxShadow: theme === 'light'
-                  ? 'inset 1px 1px 1px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.2)'
-                  : 'inset 1px 1px 1px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.4)',
-                border: '1px solid rgba(255,255,255,0.15)'
-              }}
-            >
-              {theme === 'light' ? (
-                <span className="text-[9px] leading-none select-none">☀️</span>
-              ) : (
-                <span className="text-[9px] leading-none select-none">🌙</span>
-              )}
-            </div>
-          </button>
-
           <Link href="/login" className="text-xs text-zinc-300 hover:text-white transition-colors">
             Sign In
           </Link>
@@ -190,14 +136,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Section 2: Capabilities Section with Frosted Glass Panels */}
-        <section id="capabilities" className="py-24 bg-[#070A12]/85 backdrop-blur-xl border-t border-white/10 px-6 md:px-16 lg:px-24 select-none relative z-10">
+        {/* Section 2: Capabilities Section */}
+        <section id="capabilities" className="py-24 px-6 md:px-16 lg:px-24 select-none relative z-10">
           <div className="max-w-7xl mx-auto space-y-12 text-center">
             <div className="space-y-3 max-w-2xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white uppercase">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white uppercase drop-shadow-md">
                 One Query. Multiple Remote-Sensing Capabilities.
               </h2>
-              <p className="text-zinc-400 text-sm leading-relaxed">
+              <p className="text-zinc-300 text-sm leading-relaxed drop-shadow">
                 The Master Agent orchestrates specialist neural models automatically based on sensor bands and query semantics.
               </p>
             </div>
@@ -207,14 +153,14 @@ export default function LandingPage() {
               {capabilities.map((item, index) => {
                 const Icon = item.icon;
                 return (
-                  <GlassCard key={index} className="flex flex-col text-left justify-between h-48 border border-white/10 hover:border-teal-500/40 transition-all p-5 select-none bg-zinc-950/70" hoverable>
+                  <GlassCard key={index} className="flex flex-col text-left justify-between h-48 border border-white/15 hover:border-teal-400/50 transition-all p-5 select-none bg-white/[0.03] hover:bg-white/[0.07] backdrop-blur-md" hoverable>
                     <div className="space-y-3">
-                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center bg-white/[0.02] border ${item.color} shadow-sm`}>
+                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center bg-white/[0.04] border ${item.color} shadow-sm`}>
                         <Icon size={16} />
                       </div>
                       <h3 className="text-sm font-semibold text-white/95">{item.title}</h3>
                     </div>
-                    <p className="text-[11px] text-zinc-400 leading-normal mb-1">{item.description}</p>
+                    <p className="text-[11px] text-zinc-300 leading-normal mb-1">{item.description}</p>
                   </GlassCard>
                 );
               })}
@@ -222,7 +168,7 @@ export default function LandingPage() {
 
             <div className="pt-4">
               <Link href="/dashboard">
-                <ClayButton variant="emerald" className="px-8 py-3 rounded-xl inline-flex items-center gap-2 group text-xs uppercase tracking-wider font-bold">
+                <ClayButton variant="emerald" className="px-8 py-3 rounded-xl inline-flex items-center gap-2 group text-xs uppercase tracking-wider font-bold shadow-2xl">
                   <span>Open Workspace</span>
                   <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                 </ClayButton>

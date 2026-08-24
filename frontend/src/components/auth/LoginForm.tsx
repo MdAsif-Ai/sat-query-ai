@@ -139,7 +139,7 @@ export function LoginForm() {
           <div className="w-full border-t border-white/10" />
         </div>
         <div className="relative flex justify-center text-[10px] uppercase font-mono tracking-wider">
-          <span className="bg-[#0e121e] px-3 text-zinc-400">Login with Others</span>
+          <span className="bg-black/50 backdrop-blur-md px-3.5 py-0.5 rounded-full text-zinc-300 border border-white/10">Login with Others</span>
         </div>
       </div>
 

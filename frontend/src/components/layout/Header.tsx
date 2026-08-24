@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { UserProfile } from './UserProfile';
-import { StatusBadge } from '../ui/StatusBadge';
-import { Bell, Orbit, Menu, ChevronLeft, Activity, Cpu } from 'lucide-react';
+import { Bell, Orbit, Menu, ChevronLeft } from 'lucide-react';
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -89,20 +88,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
         </div>
       </div>
 
-      {/* Center/Right side: Telemetry Status, Theme Toggle, User profile */}
+      {/* Center/Right side: Theme Toggle, Notifications, User profile */}
       <div className="flex items-center gap-2.5 sm:gap-3.5">
-        
-        {/* System telemetry stats */}
-        <div className="hidden xl:flex items-center gap-2 text-[10px] font-mono text-zinc-400">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Models Online
-          </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/[0.02] border border-white/5 text-zinc-300">
-            <Cpu size={11} className="text-cyan-400" />
-            VRAM 12GB / 12GB
-          </span>
-        </div>
 
         {/* Day/Night custom toggle button */}
         <button

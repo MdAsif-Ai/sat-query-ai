@@ -131,10 +131,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClose();
               logout();
             }}
-            className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer select-none"
+            className="flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer select-none"
           >
-            <LogOut size={15} />
-            Disconnect Session
+            <LogOut size={16} className="shrink-0" />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
