@@ -16,11 +16,10 @@ export function Header({ onToggleSidebar }: HeaderProps) {
 
   // Load theme on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('satquery_theme') as 'dark' | 'light' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('light', savedTheme === 'light');
-    }
+    const savedTheme = (localStorage.getItem('satquery_theme') as 'dark' | 'light') || 'dark';
+    setTheme(savedTheme);
+    document.documentElement.classList.toggle('light', savedTheme === 'light');
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
   }, []);
 
   const toggleTheme = () => {
@@ -28,6 +27,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
     setTheme(nextTheme);
     localStorage.setItem('satquery_theme', nextTheme);
     document.documentElement.classList.toggle('light', nextTheme === 'light');
+    document.documentElement.classList.toggle('dark', nextTheme === 'dark');
   };
 
   // Determine if back button should be shown
@@ -42,7 +42,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 header-container border-b flex items-center justify-between px-4 sm:px-6 z-40 select-none">
+    <header className="fixed top-0 left-0 right-0 h-16 header-container backdrop-blur-xl bg-white/70 dark:bg-[#070A12]/50 border-b border-black/5 dark:border-white/10 flex items-center justify-between px-4 sm:px-6 z-40 select-none transition-colors duration-200">
       {/* Left side: Logo & Branding / Page Title */}
       <div className="flex items-center gap-3">
         {showBackButton ? (

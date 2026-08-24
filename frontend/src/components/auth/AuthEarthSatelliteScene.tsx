@@ -3,8 +3,17 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 
-export function AuthEarthSatelliteScene() {
+interface AuthEarthSatelliteSceneProps {
+  mode?: 'login' | 'register';
+}
+
+export function AuthEarthSatelliteScene({ mode = 'login' }: AuthEarthSatelliteSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const modeRef = useRef(mode);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -12,7 +21,7 @@ export function AuthEarthSatelliteScene() {
 
     // Scene & Camera
     const scene = new THREE.Scene();
-    let width = container.clientWidth || window.innerWidth / 2;
+    let width = container.clientWidth || window.innerWidth;
     let height = container.clientHeight || window.innerHeight;
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
@@ -45,7 +54,7 @@ export function AuthEarthSatelliteScene() {
     // -------------------------------------------------------------
     // 1. Deep Space Twinkling Starfield
     // -------------------------------------------------------------
-    const starCount = 1400;
+    const starCount = 2000;
     const starPositions = new Float32Array(starCount * 3);
     const starColors = new Float32Array(starCount * 3);
     const starSizes = new Float32Array(starCount);
@@ -59,16 +68,16 @@ export function AuthEarthSatelliteScene() {
     ];
 
     for (let i = 0; i < starCount; i++) {
-      starPositions[i * 3] = (Math.random() - 0.5) * 50;
-      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      starPositions[i * 3 + 2] = -4 - Math.random() * 30;
+      starPositions[i * 3] = (Math.random() - 0.5) * 85;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 55;
+      starPositions[i * 3 + 2] = -3 - Math.random() * 32;
 
       const col = starColorPalette[Math.floor(Math.random() * starColorPalette.length)];
       starColors[i * 3] = col.r;
       starColors[i * 3 + 1] = col.g;
       starColors[i * 3 + 2] = col.b;
 
-      starSizes[i] = Math.random() * 2.4 + 1.1;
+      starSizes[i] = Math.random() * 2.5 + 1.1;
       starTwinkles[i] = Math.random() * 100.0;
     }
 
@@ -332,10 +341,18 @@ export function AuthEarthSatelliteScene() {
     // -------------------------------------------------------------
     let animationFrameId: number;
     let orbitAngle = 0;
+    let currentX = modeRef.current === 'login' ? -1.65 : 1.65;
     const clock = new THREE.Clock();
 
     const animate = () => {
       const elapsedTime = clock.getElapsedTime();
+
+      // Smooth Earth horizontal positioning (left for login, right for register on desktop)
+      const isDesktop = width >= 1024;
+      const targetX = isDesktop ? (modeRef.current === 'login' ? -1.65 : 1.65) : 0;
+      currentX += (targetX - currentX) * 0.06;
+      earthMesh.position.x = currentX;
+      atmosphereMesh.position.x = currentX;
 
       // Twinkle Starfield
       starMaterial.uniforms.uTime.value = elapsedTime;

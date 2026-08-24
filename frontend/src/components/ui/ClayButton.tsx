@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 interface ClayButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  variant?: 'primary' | 'violet' | 'emerald' | 'teal' | 'secondary' | 'success' | 'alert' | 'danger';
+  variant?: 'primary' | 'violet' | 'emerald' | 'teal' | 'cyan' | 'orange' | 'secondary' | 'success' | 'alert' | 'danger';
   isLoading?: boolean;
 }
 
@@ -21,8 +21,10 @@ export function ClayButton({
     emerald: 'clay-button clay-button-emerald',
     success: 'clay-button clay-button-emerald',
     teal: 'clay-button clay-button-teal',
+    cyan: 'clay-button clay-button-cyan',
+    orange: 'clay-button clay-button-orange',
     secondary: 'clay-button-secondary rounded-xl',
-    alert: 'clay-button bg-orange-600 hover:bg-orange-500',
+    alert: 'clay-button clay-button-orange',
     danger: 'clay-button bg-red-600 hover:bg-red-500',
   }[variant];
 

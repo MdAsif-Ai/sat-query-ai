@@ -19,26 +19,10 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-
-  // Default to dark space theme on mount unless explicitly set to light
+  // Enforce dark space theme as default
   useEffect(() => {
-    const savedTheme = localStorage.getItem('satquery_theme') as 'dark' | 'light' | null;
-    if (savedTheme === 'light') {
-      setTheme('light');
-      document.documentElement.classList.add('light');
-    } else {
-      setTheme('dark');
-      document.documentElement.classList.remove('light');
-    }
+    document.documentElement.classList.remove('light');
   }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    localStorage.setItem('satquery_theme', nextTheme);
-    document.documentElement.classList.toggle('light', nextTheme === 'light');
-  };
 
   const capabilities = [
     {
@@ -82,7 +66,7 @@ export default function LandingPage() {
       </div>
 
       {/* Navigation Header */}
-      <nav className="h-20 flex items-center justify-between px-6 md:px-16 header-container fixed top-0 left-0 right-0 z-50 select-none">
+      <nav className="h-20 flex items-center justify-between px-6 md:px-16 header-container backdrop-blur-xl bg-[#070A12]/50 border-b border-white/10 fixed top-0 left-0 right-0 z-50 select-none transition-colors duration-200">
         
         {/* Left Side: SatQuery Logo */}
         <div className="flex items-center gap-2.5">
@@ -95,39 +79,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Right Side: Theme Toggle & Authentication links */}
-        <div className="flex items-center gap-3.5">
-          {/* Day/Night custom toggle button */}
-          <button
-            onClick={toggleTheme}
-            title={theme === 'light' ? 'Switch to Night Mode' : 'Switch to Day Mode'}
-            className="relative w-13 h-6.5 rounded-full flex items-center p-0.5 cursor-pointer select-none transition-all duration-300 border border-white/10 shrink-0"
-            style={{
-              background: theme === 'light' 
-                ? 'linear-gradient(to right, #ffffff, #e2e8f0)' 
-                : 'rgba(7, 10, 18, 0.8)',
-              boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.05)'
-            }}
-          >
-            <div
-              className="h-5 w-5 rounded-full flex items-center justify-center transition-all duration-300 transform"
-              style={{
-                transform: theme === 'light' ? 'translateX(24px)' : 'translateX(0px)',
-                background: theme === 'light' ? '#f59e0b' : '#312e81',
-                boxShadow: theme === 'light'
-                  ? 'inset 1px 1px 1px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.2)'
-                  : 'inset 1px 1px 1px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.4)',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
-            >
-              {theme === 'light' ? (
-                <span className="text-[9px] leading-none select-none">☀️</span>
-              ) : (
-                <span className="text-[9px] leading-none select-none">🌙</span>
-              )}
-            </div>
-          </button>
-
+        {/* Right Side: Authentication links */}
+        <div className="flex items-center gap-4">
           <Link href="/login" className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors">
             Sign In
           </Link>
@@ -222,13 +175,13 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer id="footer" className="border-t border-white/10 bg-[#0b0f19]/90 backdrop-blur-xl py-10 px-6 md:px-16 lg:px-24 select-none relative z-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer id="footer" className="w-full bg-transparent py-6 px-6 sm:px-10 select-none relative z-10">
+        <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
             <div className="text-sm font-bold text-white leading-tight">SATQuery AI</div>
             <div className="text-[10px] font-mono text-zinc-400 leading-tight">AI FOR EARTH OBSERVATION · DEEP NEURAL SENSING</div>
           </div>
-          <div className="flex flex-wrap justify-center gap-8 text-xs font-mono text-zinc-400">
+          <div className="flex flex-wrap justify-center md:justify-end gap-8 text-xs font-mono text-zinc-400">
             <Link href="/" className="hover:text-white flex items-center gap-1.5 transition-colors">
               <Compass size={12} />
               About

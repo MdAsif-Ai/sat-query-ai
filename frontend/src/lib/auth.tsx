@@ -71,9 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route));
 
     if (isProtectedRoute && !user) {
-      router.push('/login');
+      router.replace('/login');
     } else if (isAuthRoute && user) {
-      router.push('/dashboard');
+      router.replace('/dashboard');
     }
   }, [user, pathname, loading, router]);
 
@@ -169,6 +169,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     return true;
   };
+
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route));
+
+  // Prevent flash of protected content while authenticating or when unauthenticated
+  if (isProtectedRoute && (loading || !user)) {
+    return (
+      <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+        <div className="min-h-screen space-background flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 select-none">
+            <div className="h-7 w-7 rounded-full border-2 border-teal-400 border-t-transparent animate-spin" />
+            <span className="text-[11px] font-mono text-zinc-400">Verifying Mission Clearance...</span>
+          </div>
+        </div>
+      </AuthContext.Provider>
+    );
+  }
+
+  // Prevent flash of auth forms when user is already authenticated
+  if (isAuthRoute && (loading || user)) {
+    return (
+      <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+        <div className="min-h-screen space-background flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 select-none">
+            <div className="h-7 w-7 rounded-full border-2 border-teal-400 border-t-transparent animate-spin" />
+            <span className="text-[11px] font-mono text-zinc-400">Opening Mission Station...</span>
+          </div>
+        </div>
+      </AuthContext.Provider>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>

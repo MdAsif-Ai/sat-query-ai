@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, History, Settings, LogOut, X, Satellite, Radio } from 'lucide-react';
+import { LayoutDashboard, History, Settings, LogOut, X, Radio } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -77,17 +77,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Top Navigation Items */}
         <div className="space-y-4">
-          <div className="px-5 py-2 select-none">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-bold">
+          <div className="px-4 py-2 select-none animate-ease-up">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-bold">
               <Radio size={12} className="text-teal-500 dark:text-teal-400 animate-pulse" />
-              <span>Console Stations</span>
+              <span>Console Navigation</span>
             </div>
           </div>
 
           <nav className="px-3 space-y-1.5">
-            {navItems.map((item) => {
+            {navItems.map((item, idx) => {
               const isActive = pathname === item.href || (item.name === 'Dashboard' && pathname.startsWith('/dashboard'));
               const Icon = item.icon;
+              const delayClass = idx === 0 ? 'animate-ease-up-delay-1' : idx === 1 ? 'animate-ease-up-delay-2' : 'animate-ease-up-delay-3';
 
               return (
                 <Link
@@ -95,50 +96,58 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   href={item.href}
                   onClick={handleNavClick}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group relative cursor-pointer select-none",
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs select-none transition-all duration-200 group",
+                    delayClass,
                     isActive
-                      ? "sidebar-link-active border-l-4 pl-3 shadow-xs " + item.activeBorder
-                      : "sidebar-link-inactive"
+                      ? "bg-teal-500 text-slate-950 font-extrabold shadow-md border border-teal-400 dark:bg-teal-400 dark:text-zinc-950 dark:font-extrabold dark:border-teal-300 dark:shadow-[0_0_20px_rgba(45,212,191,0.4)] cursor-default"
+                      : "text-slate-700 hover:text-slate-950 hover:bg-slate-100 font-semibold dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/5 border border-transparent cursor-pointer hover:translate-x-1"
                   )}
                 >
-                  <Icon
-                    size={17}
-                    className={cn(
-                      "transition-colors shrink-0",
-                      isActive ? item.accentColor : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white"
-                    )}
-                  />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 shrink-0",
+                        isActive
+                          ? "bg-black/15 text-slate-950 dark:bg-black/20 dark:text-zinc-950"
+                          : "bg-slate-100 text-slate-700 group-hover:bg-teal-500/15 group-hover:text-teal-800 dark:bg-white/5 dark:text-zinc-400 dark:group-hover:bg-teal-500/10 dark:group-hover:text-teal-300 group-hover:scale-105"
+                      )}
+                    >
+                      <Icon size={16} />
+                    </div>
+                    <span
+                      className={cn(
+                        "text-xs font-semibold tracking-wide transition-colors duration-200",
+                        isActive
+                          ? "text-slate-950 dark:text-zinc-950 font-extrabold"
+                          : "text-slate-700 group-hover:text-slate-950 dark:text-zinc-400 dark:group-hover:text-white"
+                      )}
+                    >
+                      {item.name}
+                    </span>
+                  </div>
+
+                  {isActive && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-950 dark:bg-zinc-950 shadow-xs" />
+                  )}
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        {/* Orbit Ground Station Status & Logout */}
-        <div className="px-3 space-y-3">
-          <div className="p-3 rounded-xl status-card border space-y-1.5">
-            <div className="flex items-center justify-between text-[9px] font-mono text-zinc-600 dark:text-zinc-300 font-semibold">
-              <span className="flex items-center gap-1">
-                <Satellite size={11} className="text-teal-500 dark:text-teal-400" />
-                ORBIT LINK
-              </span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">SYNCHRONIZED</span>
-            </div>
-            <div className="w-full bg-zinc-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-gradient-to-r from-teal-400 to-purple-500 h-full w-4/5 rounded-full" />
-            </div>
-          </div>
-
+        {/* Bottom Section: Logout */}
+        <div className="px-3 pt-3 border-t border-slate-200 dark:border-white/10 animate-ease-up-delay-4">
           <button
             onClick={() => {
               onClose();
               logout();
             }}
-            className="flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-500/10 transition-all cursor-pointer select-none"
+            className="flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:text-rose-300 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/20 transition-all duration-200 hover:translate-x-0.5 cursor-pointer select-none group"
           >
-            <LogOut size={16} className="shrink-0" />
-            <span>Logout</span>
+            <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-rose-500/10 group-hover:bg-rose-500/20 group-hover:scale-105 transition-all duration-200 shrink-0">
+              <LogOut size={15} />
+            </div>
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>

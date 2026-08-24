@@ -3,30 +3,64 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { ImageUploader, UploadedFile } from '@/components/dashboard/ImageUploader';
-import { QueryComposer } from '@/components/dashboard/QueryComposer';
-import { RoutingStatus } from '@/components/dashboard/RoutingStatus';
-import { AnalysisResult } from '@/components/dashboard/AnalysisResult';
-import { CapabilityCards } from '@/components/dashboard/CapabilityCards';
-import { RealisticSatelliteWidget } from '@/components/dashboard/RealisticSatelliteWidget';
-import { runSimulatedAnalysis, HistoryItem } from '@/lib/mock-data';
-import { Orbit, Sparkles, RefreshCw, Radio, Satellite, Activity } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { ClayButton } from '@/components/ui/ClayButton';
+import { RealisticSatelliteWidget } from '@/components/dashboard/RealisticSatelliteWidget';
+import { CapabilityCards } from '@/components/dashboard/CapabilityCards';
+
+// Modular Dashboard Components
+import { ModeSelector } from '@/components/dashboard/ModeSelector';
+import { ImageUploadPanel } from '@/components/dashboard/ImageUploadPanel';
+import { QueryInputPanel } from '@/components/dashboard/QueryInputPanel';
+import { SampleDatasetSelector } from '@/components/dashboard/SampleDatasetSelector';
+import { TaskDetectionCard } from '@/components/dashboard/TaskDetectionCard';
+import { AnalysisProgressTimeline } from '@/components/dashboard/AnalysisProgressTimeline';
+import { AnswerPanel } from '@/components/dashboard/AnswerPanel';
+import { ConfidencePanel } from '@/components/dashboard/ConfidencePanel';
+import { ExecutionTraceViewer } from '@/components/dashboard/ExecutionTraceViewer';
+import { VisualEvidenceViewer } from '@/components/dashboard/VisualEvidenceViewer';
+import { ModelInformationCard } from '@/components/dashboard/ModelInformationCard';
+import { WarningBanner } from '@/components/dashboard/WarningBanner';
+import { FallbackStatusBadge } from '@/components/dashboard/FallbackStatusBadge';
+import { DownloadReportModal } from '@/components/dashboard/DownloadReportModal';
+
+// Types and API
+import { InputMode, UploadedSlotFile, AnalysisResultData, SpatialMetadata } from '@/lib/types';
+import { runEarthObservationAnalysis, checkFastApiHealth, ApiStatus } from '@/lib/api';
+import { SampleDatasetPreset } from '@/lib/mock-data';
+import { Radio, RefreshCw, Sparkles, Activity, ShieldCheck, Satellite, Layers, Compass } from 'lucide-react';
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [files, setFiles] = useState<UploadedFile[]>([]);
+  
+  // Dashboard Input State
+  const [mode, setMode] = useState<InputMode>('single');
+  const [slotFiles, setSlotFiles] = useState<UploadedSlotFile[]>([]);
+  const [activeQuery, setActiveQuery] = useState('');
+  const [activeMetadata, setActiveMetadata] = useState<SpatialMetadata | undefined>();
+  
+  // Analysis Lifecycle State
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
-  
-  // Active analysis results
-  const [activeQuery, setActiveQuery] = useState('');
-  const [analysisResult, setAnalysisResult] = useState<Omit<HistoryItem, 'id' | 'createdAt'> | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResultData | null>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
-  // Keep state sync across page session redirects (e.g. new chat triggers, opening history item)
+  // FastAPI Connection Status
+  const [apiStatus, setApiStatus] = useState<ApiStatus>({
+    isOnline: false,
+    endpoint: 'http://localhost:8000',
+    engine: 'Local Neural Simulator'
+  });
+
+  // Check FastAPI health on mount
+  useEffect(() => {
+    checkFastApiHealth().then(status => setApiStatus(status));
+  }, []);
+
+  // Handle session reset or history restore
   useEffect(() => {
     const handleResetEvent = () => {
-      setFiles([]);
+      setSlotFiles([]);
       setActiveQuery('');
       setAnalysisResult(null);
     };
@@ -41,31 +75,13 @@ export default function DashboardPage() {
       sessionStorage.removeItem('satquery_reset_dashboard');
     } else if (activeItemStr) {
       try {
-        const item = JSON.parse(activeItemStr) as HistoryItem;
-        setActiveQuery(item.query);
-        setAnalysisResult({
-          query: item.query,
-          type: item.type,
-          imageCount: item.imageCount,
-          status: item.status,
-          confidence: item.confidence,
-          modelsUsed: item.modelsUsed,
-          answer: item.answer,
-          evidence: item.evidence,
-          trace: item.trace
-        });
-
-        // Reconstruct mock attachment file inputs
-        const mockFiles: UploadedFile[] = Array.from({ length: item.imageCount }).map((_, idx) => ({
-          id: `history-restored-${idx}-${Math.random().toString(36).substring(5)}`,
-          file: new File([""], `spatial_sensor_capture_${idx + 1}.tif`, { type: "image/tiff" }),
-          previewUrl: "geotiff-placeholder",
-          progress: 100,
-          status: "completed"
-        }));
-        setFiles(mockFiles);
+        const item = JSON.parse(activeItemStr);
+        setActiveQuery(item.query || '');
+        if (item.answer) {
+          setAnalysisResult(item);
+        }
       } catch (e) {
-        console.error("Failed to restore history item from sessionStorage", e);
+        console.error('Failed to parse history item', e);
       } finally {
         sessionStorage.removeItem('satquery_active_history_item');
       }
@@ -76,106 +92,120 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const handleAnalysisSubmit = (queryText: string) => {
+  // Switch mode handler
+  const handleSelectMode = (newMode: InputMode) => {
+    setMode(newMode);
+    setSlotFiles([]);
+    setAnalysisResult(null);
+  };
+
+  // Pre-loaded sample dataset selector handler
+  const handleSelectPreset = (preset: SampleDatasetPreset) => {
+    setMode(preset.mode);
+    setActiveQuery(preset.suggestedQuery);
+    setActiveMetadata(preset.metadata);
+
+    // Create virtual slot file objects for preset
+    const presetFiles: UploadedSlotFile[] = [
+      {
+        id: `slot-preset-${preset.id}-1`,
+        file: new File([''], `${preset.id}_channel_1.tif`, { type: 'image/tiff' }),
+        previewUrl: preset.previewThumbnail || '/satellite-port.jpg',
+        progress: 100,
+        status: 'completed',
+        sensorType: preset.mode === 'optical-sar' ? 'optical-rgb' : 'cartosat-pan',
+        label: preset.mode === 'before-after' ? 'T1: Baseline (2022)' : 'Primary Optical Scene',
+        metadata: preset.metadata
+      }
+    ];
+
+    if (preset.mode !== 'single') {
+      presetFiles.push({
+        id: `slot-preset-${preset.id}-2`,
+        file: new File([''], `${preset.id}_channel_2.tif`, { type: 'image/tiff' }),
+        previewUrl: preset.mode === 'optical-sar' ? '/satellite-sar.jpg' : '/satellite-port.jpg',
+        progress: 100,
+        status: 'completed',
+        sensorType: preset.mode === 'optical-sar' ? 'sar-sentinel1' : 'optical-rgb',
+        label: preset.mode === 'before-after' ? 'T2: Current (2024)' : 'SAR Radar Backscatter (VV/VH)',
+        metadata: preset.metadata
+      });
+    }
+
+    setSlotFiles(presetFiles);
+  };
+
+  // Execute Earth Observation Analysis
+  const handleExecuteAnalysis = async (queryText: string) => {
     setIsLoading(true);
     setLoadingStep(0);
     setActiveQuery(queryText);
     setAnalysisResult(null);
 
-    const intervalTime = 600;
-    
-    // Step 0: Reading spatial metadata
+    const stepInterval = 500;
+
+    // Phase 1: Input Validation
     setTimeout(() => {
-      setLoadingStep(1); // Understanding query
+      setLoadingStep(1); // Phase 2: Master Agent Planning
       setTimeout(() => {
-        setLoadingStep(2); // Selecting specialist models
+        setLoadingStep(2); // Phase 3: Specialist Inference
         setTimeout(() => {
-          setLoadingStep(3); // Analyzing Earth observation data
-          setTimeout(() => {
-            setLoadingStep(4); // Cross-validating evidence
-            setTimeout(() => {
-              const simulated = runSimulatedAnalysis(queryText, files.length);
-              setAnalysisResult(simulated);
-              setIsLoading(false);
+          setLoadingStep(3); // Phase 4: Evidence Aggregator
+          setTimeout(async () => {
+            setLoadingStep(4); // Phase 5: Grounded Response Generation
+            
+            // Execute request
+            const { result } = await runEarthObservationAnalysis({
+              query: queryText,
+              mode,
+              files: slotFiles.map(s => ({
+                file: s.file,
+                name: s.file.name,
+                sensorType: s.sensorType,
+                slotLabel: s.label,
+                previewUrl: s.previewUrl
+              })),
+              spatialMetadata: activeMetadata
+            });
 
-              // Persist this query session in history local storage database
-              try {
-                const historyData = localStorage.getItem('satquery_history_db');
-                const currentHistory: HistoryItem[] = historyData ? JSON.parse(historyData) : [];
-                
-                const newItem: HistoryItem = {
-                  id: Math.random().toString(36).substring(7),
-                  createdAt: 'Just now',
-                  ...simulated
-                };
-                
-                localStorage.setItem('satquery_history_db', JSON.stringify([newItem, ...currentHistory]));
-              } catch (e) {
-                console.error("Failed to update history data store", e);
-              }
-            }, intervalTime);
-          }, intervalTime);
-        }, intervalTime);
-      }, intervalTime);
-    }, intervalTime);
+            setAnalysisResult(result);
+            setIsLoading(false);
+
+            // Persist to local mission history log
+            try {
+              const historyData = localStorage.getItem('satquery_history_db');
+              const currentHistory = historyData ? JSON.parse(historyData) : [];
+              localStorage.setItem('satquery_history_db', JSON.stringify([result, ...currentHistory]));
+            } catch (e) {
+              console.error('Failed to save to local history', e);
+            }
+          }, stepInterval);
+        }, stepInterval);
+      }, stepInterval);
+    }, stepInterval);
   };
 
-  const handleRemoveFile = (id: string) => {
-    setFiles(prev => prev.filter(f => f.id !== id));
-  };
-
-  const startNewAnalysis = () => {
-    setFiles([]);
+  const handleStartNewAnalysis = () => {
+    setSlotFiles([]);
     setActiveQuery('');
     setAnalysisResult(null);
   };
 
   return (
-    <div className="min-h-screen space-background text-zinc-100 flex flex-col">
-      {/* Fixed top Header */}
+    <div className="min-h-screen space-background text-zinc-100 flex flex-col selection:bg-teal-500/20 selection:text-white">
+      {/* Top Header Navigation */}
       <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-      {/* Fixed left Sidebar */}
+      {/* Navigation Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main content viewport */}
+      {/* Main Workspace Viewport */}
       <main className="flex-1 md:pl-60 pt-16 flex flex-col min-h-full">
         <div className="flex-1 p-4 sm:p-6 lg:p-10 max-w-[1640px] w-full mx-auto space-y-7">
           
-          {/* Dashboard Console Hero Section (When no active analysis) */}
-          {!analysisResult && !isLoading && (
-            <GlassCard variant="elevated" className="relative overflow-hidden p-7 sm:p-10 border-white/10 select-none group hover:border-white/20 transition-all duration-300">
-              
-              {/* Space Atmospheric background glow */}
-              <div className="absolute -right-16 -top-16 w-96 h-96 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
-              <div className="absolute -left-16 -bottom-16 w-96 h-96 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
-
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
-                {/* Left Text */}
-                <div className="text-left space-y-3 max-w-2xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/25 text-teal-300 text-xs font-mono uppercase tracking-wider">
-                    <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
-                    Autonomous Remote Sensing Console
-                  </div>
-                  <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                    Ask Your Satellite Imagery Anything.
-                  </h2>
-                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-xl">
-                    Upload your multi-spectral or SAR imagery and ask a natural-language question. Our AI routing agent automatically determines the required specialist analysis.
-                  </p>
-                </div>
-
-                {/* Right Realistic 3D Earth Observation Satellite */}
-                <div className="relative flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-500">
-                  <RealisticSatelliteWidget />
-                </div>
-              </div>
-            </GlassCard>
-          )}
-
           {/* Active Session Bar (When processing or results present) */}
           {(analysisResult || isLoading) && (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-4 select-none">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-4 select-none animate-in fade-in duration-200">
               <div className="text-left space-y-1">
                 <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
                   <Radio size={18} className="text-teal-400 animate-pulse" />
@@ -185,79 +215,159 @@ export default function DashboardPage() {
                   {isLoading ? 'Neural pipeline is executing mission workflow...' : 'Geospatial inference synthesized.'}
                 </p>
               </div>
-              
+
               {!isLoading && (
-                <button
-                  onClick={startNewAnalysis}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/5 border border-white/10 text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
+                <ClayButton
+                  variant="secondary"
+                  onClick={handleStartNewAnalysis}
+                  className="px-3.5 py-1.5 text-xs rounded-xl flex items-center gap-1.5"
                 >
-                  <RefreshCw size={12} />
-                  Start New Query
-                </button>
+                  <RefreshCw size={13} />
+                  <span>Start New Query</span>
+                </ClayButton>
               )}
             </div>
           )}
 
-          {/* Main workspace Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* Upload & Query Composer Workspace */}
-            {!analysisResult && !isLoading && (
-              <div className="lg:col-span-12 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Universal dropzone upload component */}
-                  <ImageUploader files={files} setFiles={setFiles} />
-                  
-                  {/* Text/NL query composer */}
-                  <QueryComposer
-                    files={files}
-                    onRemoveFile={handleRemoveFile}
-                    onSubmit={handleAnalysisSubmit}
-                    isLoading={isLoading}
+          {/* Hero Banner with 3D Satellite (Visible when idle) */}
+          {!analysisResult && !isLoading && (
+            <div className="relative overflow-hidden p-8 sm:p-10 rounded-2xl bg-[#111827]/75 backdrop-blur-xl border border-white/10 select-none group shadow-2xl hover:border-teal-500/30 transition-all duration-300">
+              <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+              <div className="absolute -left-16 -bottom-16 w-80 h-80 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
+
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
+                <div className="text-left space-y-3 max-w-2xl">
+                  <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                    Ask Your Earth Observation Imagery Anything.
+                  </h2>
+                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-medium">
+                    Select an input mode (Single Image, Optical + SAR, or Before + After), ingest satellite rasters, and compose your mission query. The Master Agent coordinates specialist neural models automatically.
+                  </p>
+                </div>
+
+                <div className="relative flex items-center justify-center shrink-0 group-hover:scale-102 transition-transform duration-300">
+                  <RealisticSatelliteWidget />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Input Console Workspace (Visible when idle) */}
+          {!analysisResult && !isLoading && (
+            <div className="space-y-6">
+              {/* 1. Mode Selector */}
+              <ModeSelector currentMode={mode} onSelectMode={handleSelectMode} />
+
+              {/* 2. Pre-loaded Sample Datasets */}
+              <SampleDatasetSelector onSelectPreset={handleSelectPreset} />
+
+              {/* 3. Main Input Cards Grid: Uploader + Query Composer */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="lg:col-span-6">
+                  <div className="p-6 rounded-2xl bg-[#111827]/75 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300">
+                    <ImageUploadPanel
+                      mode={mode}
+                      slotFiles={slotFiles}
+                      setSlotFiles={setSlotFiles}
+                    />
+                  </div>
+                </div>
+
+                <div className="lg:col-span-6">
+                  <div className="p-6 rounded-2xl bg-[#111827]/75 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-300">
+                    <QueryInputPanel
+                      mode={mode}
+                      slotFiles={slotFiles}
+                      onSubmitQuery={handleExecuteAnalysis}
+                      isLoading={isLoading}
+                      activeQuery={activeQuery}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Operational Capability Cards */}
+              <CapabilityCards />
+            </div>
+          )}
+
+          {/* Stepped Timeline View (Visible during in-flight analysis) */}
+          {isLoading && (
+            <div className="pt-6 animate-in fade-in zoom-in-95 duration-200">
+              <AnalysisProgressTimeline
+                currentStep={loadingStep}
+                taskName={mode === 'before-after' ? 'Bi-temporal Change Detection' : mode === 'optical-sar' ? 'Optical + SAR Cross-Modal Fusion' : 'Single Image Analysis'}
+              />
+            </div>
+          )}
+
+          {/* Comprehensive Results Workbench (Visible upon completion) */}
+          {!isLoading && analysisResult && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+              
+              {/* Warning Banner (if sensor occlusions or alerts exist) */}
+              <WarningBanner warnings={analysisResult.warnings} />
+
+              {/* Top Summary Split: Left = Visual Evidence Canvas, Right = Answer Panel & Routing */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                {/* Visual Evidence Viewport (Bounding boxes, Masks, Change Comparison, Optical/SAR) */}
+                <div className="lg:col-span-7">
+                  <VisualEvidenceViewer
+                    evidence={analysisResult.evidence}
+                    metadata={analysisResult.spatialMetadata}
+                    query={analysisResult.query}
                   />
                 </div>
-                
-                {/* Available capability cards grid */}
-                <div className="pt-2">
-                  <CapabilityCards />
+
+                {/* Right Side: Answer Panel & Key Insights */}
+                <div className="lg:col-span-5 space-y-4">
+                  <AnswerPanel
+                    query={analysisResult.query}
+                    answer={analysisResult.answer}
+                    keyInsights={analysisResult.keyInsights}
+                    confidence={analysisResult.confidence}
+                    taskType={analysisResult.taskType}
+                    onOpenReportModal={() => setIsReportModalOpen(true)}
+                  />
+
+                  {/* Fallback Status Pill */}
+                  <FallbackStatusBadge fallback={analysisResult.fallback} />
                 </div>
               </div>
-            )}
 
-            {/* Display processing status steps when analysis is in-flight */}
-            {isLoading && (
-              <div className="lg:col-span-12 max-w-xl mx-auto w-full pt-6 animate-in fade-in zoom-in-95 duration-200">
-                <RoutingStatus currentStep={loadingStep} />
-              </div>
-            )}
+              {/* Middle Row: Task Detection Card & Multi-Factor Confidence Panel */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="lg:col-span-6">
+                  <TaskDetectionCard
+                    taskType={analysisResult.taskType}
+                    confidence={analysisResult.confidence}
+                    modelsUsed={analysisResult.modelsUsed}
+                  />
+                </div>
 
-            {/* Display finalized results */}
-            {!isLoading && analysisResult && (
-              <div className="lg:col-span-12 space-y-5">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <AnalysisResult
-                      query={activeQuery}
-                      type={analysisResult.type}
-                      confidence={analysisResult.confidence || 90}
-                      modelsUsed={analysisResult.modelsUsed || []}
-                      answer={analysisResult.answer || ''}
-                      evidence={analysisResult.evidence || { type: 'vqa', data: {} }}
-                      trace={analysisResult.trace || []}
-                    />
-                  </div>
-                  <div className="lg:col-span-1">
-                    <RoutingStatus
-                      currentStep={5}
-                      taskType={analysisResult.type}
-                      modelsUsed={analysisResult.modelsUsed}
-                    />
-                  </div>
+                <div className="lg:col-span-6">
+                  <ConfidencePanel
+                    confidence={analysisResult.confidence}
+                    breakdown={analysisResult.confidenceBreakdown}
+                  />
                 </div>
               </div>
-            )}
 
-          </div>
+              {/* Bottom Row: Specialist Models Architecture & Auditable Execution Trace */}
+              <div className="space-y-6">
+                <ModelInformationCard models={analysisResult.modelsUsed} />
+                <ExecutionTraceViewer trace={analysisResult.trace} />
+              </div>
+
+              {/* Download Report Modal */}
+              <DownloadReportModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                data={analysisResult}
+              />
+            </div>
+          )}
 
         </div>
       </main>
