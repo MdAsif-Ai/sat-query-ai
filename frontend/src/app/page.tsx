@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { ClayButton } from '@/components/ui/ClayButton';
@@ -10,27 +10,39 @@ import {
   BookOpen, 
   Compass, 
   Mail, 
-  Image, 
+  Image as ImageIcon, 
   Calendar, 
   Layers, 
   Target, 
   GitBranch, 
-  Orbit, 
   Sparkles
 } from 'lucide-react';
 
 export default function LandingPage() {
-  // Respect saved theme on mount if previously toggled
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  // Default to dark space theme on mount unless explicitly set to light
   useEffect(() => {
     const savedTheme = localStorage.getItem('satquery_theme') as 'dark' | 'light' | null;
-    if (savedTheme) {
-      document.documentElement.classList.toggle('light', savedTheme === 'light');
+    if (savedTheme === 'light') {
+      setTheme('light');
+      document.documentElement.classList.add('light');
+    } else {
+      setTheme('dark');
+      document.documentElement.classList.remove('light');
     }
   }, []);
 
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('satquery_theme', nextTheme);
+    document.documentElement.classList.toggle('light', nextTheme === 'light');
+  };
+
   const capabilities = [
     {
-      icon: Image,
+      icon: ImageIcon,
       title: "Single Image Analysis",
       description: "Visual Question Answering and feature identification on high-res optical imagery.",
       color: "border-emerald-500/30 text-emerald-400"
@@ -64,28 +76,59 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen space-background text-zinc-100 flex flex-col selection:bg-teal-500/20 selection:text-white relative overflow-x-hidden">
       
-      {/* Fixed Rotating Earth Horizon Background */}
-      <div className="fixed -bottom-[500px] sm:-bottom-[700px] md:-bottom-[880px] left-1/2 -translate-x-1/2 w-[1100px] h-[1100px] sm:w-[1500px] sm:h-[1500px] md:w-[1800px] md:h-[1800px] pointer-events-none z-0 overflow-hidden flex items-center justify-center">
+      {/* Fixed Fullscreen 3D Rotating Earth Horizon & Twinkling Starfield */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <RotatingEarth />
       </div>
 
       {/* Navigation Header */}
-      <nav className="h-20 flex items-center justify-between px-6 md:px-16 backdrop-blur-xl bg-[#050811]/70 fixed top-0 left-0 right-0 z-50 border-b border-white/5 select-none">
+      <nav className="h-20 flex items-center justify-between px-6 md:px-16 header-container fixed top-0 left-0 right-0 z-50 select-none">
         
-        {/* Left Side: Orbit Logo */}
+        {/* Left Side: SatQuery Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center text-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.2)]">
-            <Orbit size={18} className="animate-spin-slow" />
+          <div className="h-9 w-9 rounded-xl satquery-logo-badge p-1 flex items-center justify-center shrink-0">
+            <img src="/SatQuery.png" alt="SATQuery AI Logo" className="h-full w-full object-contain" />
           </div>
           <div>
-            <span className="text-sm font-bold tracking-wider text-white">SATQuery AI</span>
+            <span className="text-sm font-bold tracking-wider text-white text-brand-title">SATQuery AI</span>
             <span className="hidden sm:inline-block text-[9px] font-mono text-zinc-400 ml-2 pl-2 border-l border-white/10">Earth Observation Intelligence</span>
           </div>
         </div>
 
-        {/* Right Side: Authentication links */}
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="text-xs text-zinc-300 hover:text-white transition-colors">
+        {/* Right Side: Theme Toggle & Authentication links */}
+        <div className="flex items-center gap-3.5">
+          {/* Day/Night custom toggle button */}
+          <button
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'Switch to Night Mode' : 'Switch to Day Mode'}
+            className="relative w-13 h-6.5 rounded-full flex items-center p-0.5 cursor-pointer select-none transition-all duration-300 border border-white/10 shrink-0"
+            style={{
+              background: theme === 'light' 
+                ? 'linear-gradient(to right, #ffffff, #e2e8f0)' 
+                : 'rgba(7, 10, 18, 0.8)',
+              boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.05)'
+            }}
+          >
+            <div
+              className="h-5 w-5 rounded-full flex items-center justify-center transition-all duration-300 transform"
+              style={{
+                transform: theme === 'light' ? 'translateX(24px)' : 'translateX(0px)',
+                background: theme === 'light' ? '#f59e0b' : '#312e81',
+                boxShadow: theme === 'light'
+                  ? 'inset 1px 1px 1px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.2)'
+                  : 'inset 1px 1px 1px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}
+            >
+              {theme === 'light' ? (
+                <span className="text-[9px] leading-none select-none">☀️</span>
+              ) : (
+                <span className="text-[9px] leading-none select-none">🌙</span>
+              )}
+            </div>
+          </button>
+
+          <Link href="/login" className="text-xs font-semibold text-zinc-300 hover:text-white transition-colors">
             Sign In
           </Link>
           <Link href="/register">
@@ -103,7 +146,7 @@ export default function LandingPage() {
         <section className="min-h-[86vh] flex flex-col items-center justify-center px-6 md:px-16 text-center select-none">
           
           <div className="max-w-3xl space-y-6 pt-10">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/25 text-teal-300 text-xs font-mono uppercase tracking-wider backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-mono uppercase tracking-wider backdrop-blur-md shadow-xs">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
               Multimodal Vision-Language Assistant
             </div>
@@ -115,7 +158,7 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
+            <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto font-medium drop-shadow">
               SATQuery AI turns natural-language queries into automated remote-sensing workflows with bi-temporal change detection, SAR fusion, and vector grounding.
             </p>
             
@@ -128,7 +171,7 @@ export default function LandingPage() {
                 </ClayButton>
               </Link>
               <a href="#capabilities">
-                <ClayButton variant="secondary" className="px-7 py-3.5 rounded-xl font-medium text-xs uppercase tracking-wider">
+                <ClayButton variant="secondary" className="px-7 py-3.5 rounded-xl font-semibold text-xs uppercase tracking-wider">
                   Explore Platform
                 </ClayButton>
               </a>
@@ -143,7 +186,7 @@ export default function LandingPage() {
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white uppercase drop-shadow-md">
                 One Query. Multiple Remote-Sensing Capabilities.
               </h2>
-              <p className="text-zinc-300 text-sm leading-relaxed drop-shadow">
+              <p className="text-zinc-300 text-sm leading-relaxed">
                 The Master Agent orchestrates specialist neural models automatically based on sensor bands and query semantics.
               </p>
             </div>
@@ -153,14 +196,14 @@ export default function LandingPage() {
               {capabilities.map((item, index) => {
                 const Icon = item.icon;
                 return (
-                  <GlassCard key={index} className="flex flex-col text-left justify-between h-48 border border-white/15 hover:border-teal-400/50 transition-all p-5 select-none bg-white/[0.03] hover:bg-white/[0.07] backdrop-blur-md" hoverable>
+                  <GlassCard key={index} className="flex flex-col text-left justify-between h-48 border border-white/10 hover:border-teal-400/50 transition-all p-5 select-none bg-[#111827]/70 hover:bg-[#111827]/90 backdrop-blur-md" hoverable>
                     <div className="space-y-3">
                       <div className={`h-8 w-8 rounded-lg flex items-center justify-center bg-white/[0.04] border ${item.color} shadow-sm`}>
                         <Icon size={16} />
                       </div>
-                      <h3 className="text-sm font-semibold text-white/95">{item.title}</h3>
+                      <h3 className="text-sm font-bold text-white">{item.title}</h3>
                     </div>
-                    <p className="text-[11px] text-zinc-300 leading-normal mb-1">{item.description}</p>
+                    <p className="text-[11px] text-zinc-300 leading-normal mb-1 font-medium">{item.description}</p>
                   </GlassCard>
                 );
               })}
@@ -179,11 +222,11 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer id="footer" className="border-t border-white/10 bg-[#050811]/90 backdrop-blur-xl py-10 px-6 md:px-16 lg:px-24 select-none relative z-10">
+      <footer id="footer" className="border-t border-white/10 bg-[#0b0f19]/90 backdrop-blur-xl py-10 px-6 md:px-16 lg:px-24 select-none relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
             <div className="text-sm font-bold text-white leading-tight">SATQuery AI</div>
-            <div className="text-[10px] font-mono text-zinc-500 leading-tight">AI FOR EARTH OBSERVATION · DEEP NEURAL SENSING</div>
+            <div className="text-[10px] font-mono text-zinc-400 leading-tight">AI FOR EARTH OBSERVATION · DEEP NEURAL SENSING</div>
           </div>
           <div className="flex flex-wrap justify-center gap-8 text-xs font-mono text-zinc-400">
             <Link href="/" className="hover:text-white flex items-center gap-1.5 transition-colors">

@@ -22,22 +22,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       name: 'Dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
-      accentColor: 'text-teal-400',
-      activeBorder: 'border-teal-400',
+      accentColor: 'text-teal-500 dark:text-teal-400',
+      activeBorder: 'border-teal-500',
     },
     {
       name: 'History',
       href: '/history',
       icon: History,
-      accentColor: 'text-orange-400',
-      activeBorder: 'border-orange-400',
+      accentColor: 'text-orange-500 dark:text-orange-400',
+      activeBorder: 'border-orange-500',
     },
     {
       name: 'Settings',
       href: '/settings',
       icon: Settings,
-      accentColor: 'text-purple-400',
-      activeBorder: 'border-purple-400',
+      accentColor: 'text-purple-500 dark:text-purple-400',
+      activeBorder: 'border-purple-500',
     },
   ];
 
@@ -50,7 +50,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Mobile Sidebar Backdrop Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/75 backdrop-blur-md z-45 md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-45 md:hidden"
           onClick={onClose}
         />
       )}
@@ -58,14 +58,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Spacecraft Control Panel Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 w-60 glass-panel border-y-0 border-l-0 border-r border-white/5 pt-20 pb-4 flex flex-col justify-between z-45 transition-transform duration-300 md:translate-x-0 bg-[#050811]/90",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "sidebar-container fixed bottom-0 left-0 w-60 border-r pb-4 flex flex-col justify-between transition-transform duration-300 select-none",
+          // On desktop, it starts at top-16 (below header) at z-30
+          "md:top-16 md:z-30 md:translate-x-0 md:pt-4",
+          // On mobile, it covers full height with backdrop at z-50
+          "top-0 z-50 pt-16",
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
         {/* Mobile close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 md:hidden text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 md:hidden text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
           aria-label="Close Navigation"
         >
           <X size={18} />
@@ -74,8 +78,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Top Navigation Items */}
         <div className="space-y-4">
           <div className="px-5 py-2 select-none">
-            <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1.5">
-              <Radio size={10} className="text-teal-400 animate-pulse" />
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-bold">
+              <Radio size={12} className="text-teal-500 dark:text-teal-400 animate-pulse" />
               <span>Console Stations</span>
             </div>
           </div>
@@ -91,17 +95,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   href={item.href}
                   onClick={handleNavClick}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all group relative cursor-pointer select-none",
+                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group relative cursor-pointer select-none",
                     isActive
-                      ? "bg-white/[0.05] text-white border-l-2 pl-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] " + item.activeBorder
-                      : "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.02]"
+                      ? "sidebar-link-active border-l-4 pl-3 shadow-xs " + item.activeBorder
+                      : "sidebar-link-inactive"
                   )}
                 >
                   <Icon
-                    size={16}
+                    size={17}
                     className={cn(
-                      "transition-colors",
-                      isActive ? item.accentColor : "text-zinc-500 group-hover:text-zinc-300"
+                      "transition-colors shrink-0",
+                      isActive ? item.accentColor : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white"
                     )}
                   />
                   <span>{item.name}</span>
@@ -113,15 +117,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Orbit Ground Station Status & Logout */}
         <div className="px-3 space-y-3">
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-1.5">
-            <div className="flex items-center justify-between text-[9px] font-mono text-zinc-400">
+          <div className="p-3 rounded-xl status-card border space-y-1.5">
+            <div className="flex items-center justify-between text-[9px] font-mono text-zinc-600 dark:text-zinc-300 font-semibold">
               <span className="flex items-center gap-1">
-                <Satellite size={10} className="text-teal-400" />
+                <Satellite size={11} className="text-teal-500 dark:text-teal-400" />
                 ORBIT LINK
               </span>
-              <span className="text-emerald-400 font-semibold">SYNCHRONIZED</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">SYNCHRONIZED</span>
             </div>
-            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+            <div className="w-full bg-zinc-200 dark:bg-white/10 h-1.5 rounded-full overflow-hidden">
               <div className="bg-gradient-to-r from-teal-400 to-purple-500 h-full w-4/5 rounded-full" />
             </div>
           </div>
@@ -131,7 +135,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClose();
               logout();
             }}
-            className="flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer select-none"
+            className="flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-500/10 transition-all cursor-pointer select-none"
           >
             <LogOut size={16} className="shrink-0" />
             <span>Logout</span>

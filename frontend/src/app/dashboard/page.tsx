@@ -8,8 +8,9 @@ import { QueryComposer } from '@/components/dashboard/QueryComposer';
 import { RoutingStatus } from '@/components/dashboard/RoutingStatus';
 import { AnalysisResult } from '@/components/dashboard/AnalysisResult';
 import { CapabilityCards } from '@/components/dashboard/CapabilityCards';
+import { RealisticSatelliteWidget } from '@/components/dashboard/RealisticSatelliteWidget';
 import { runSimulatedAnalysis, HistoryItem } from '@/lib/mock-data';
-import { Orbit, Sparkles, RefreshCw, Radio, Satellite, Globe2, Activity } from 'lucide-react';
+import { Orbit, Sparkles, RefreshCw, Radio, Satellite, Activity } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 
 export default function DashboardPage() {
@@ -164,26 +165,9 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                {/* Right Earth + Orbit Visualization with subtle scale on hover */}
-                <div className="relative w-56 h-36 sm:w-64 sm:h-44 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-500">
-                  {/* Orbital Arc Line */}
-                  <div className="absolute w-60 h-60 rounded-full border border-dashed border-teal-400/30 animate-spin-slow" />
-                  
-                  {/* Partially Cropped Earth Globe visual */}
-                  <div className="w-36 h-36 rounded-full bg-gradient-to-tr from-cyan-950 via-teal-900 to-indigo-950 border-2 border-teal-400/40 shadow-[inset_0_0_25px_rgba(20,184,166,0.5),0_0_35px_rgba(6,182,212,0.25)] flex items-center justify-center relative overflow-hidden">
-                    <Globe2 size={72} className="text-teal-300/30 animate-pulse" />
-                    {/* Scanning radar line */}
-                    <div className="absolute w-full h-[2px] bg-teal-300/70 shadow-[0_0_10px_rgba(20,184,166,0.9)] top-0 left-0 animate-scan-beam" />
-                  </div>
-
-                  {/* Satellite Node traversing orbit */}
-                  <div className="absolute w-full h-full animate-orbit-slow">
-                    <div className="absolute top-2 right-4 flex items-center justify-center">
-                      <div className="h-7 w-7 rounded-lg bg-zinc-950 border border-teal-400 flex items-center justify-center text-teal-300 shadow-[0_0_12px_rgba(20,184,166,0.7)]">
-                        <Satellite size={14} />
-                      </div>
-                    </div>
-                  </div>
+                {/* Right Realistic 3D Earth Observation Satellite */}
+                <div className="relative flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-500">
+                  <RealisticSatelliteWidget />
                 </div>
               </div>
             </GlassCard>

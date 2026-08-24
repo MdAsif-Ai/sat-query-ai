@@ -2,18 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
-import { Orbit, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-  // Load theme on mount
+  // Default to dark space theme on mount unless explicitly set to light
   useEffect(() => {
     const savedTheme = localStorage.getItem('satquery_theme') as 'dark' | 'light' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('light', savedTheme === 'light');
+    if (savedTheme === 'light') {
+      setTheme('light');
+      document.documentElement.classList.add('light');
+    } else {
+      setTheme('dark');
+      document.documentElement.classList.remove('light');
     }
   }, []);
 
@@ -25,29 +28,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-hidden select-none">
+    <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-hidden select-none space-background">
       
-      {/* Fullscreen Background Image - Crystal Clear & Bright */}
-      <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
-        style={{
-          backgroundImage: `url('/satellite_auth_bg.jpg')`
-        }}
-      />
-
       {/* Top Header Actions */}
       <header className="relative z-20 w-full px-6 py-6 sm:px-10 flex items-center justify-between">
         {/* Back button to Landing page */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black/40 hover:bg-black/60 border border-white/20 hover:border-teal-400/60 text-xs font-medium text-white transition-all backdrop-blur-md shadow-xl cursor-pointer group"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 hover:bg-black/70 border border-white/20 hover:border-teal-400/60 text-xs font-semibold text-white transition-all backdrop-blur-md shadow-lg cursor-pointer group"
         >
           <ArrowLeft size={14} className="text-teal-400 group-hover:-translate-x-1 transition-transform" />
           <span>Back to Landing</span>
         </Link>
 
         {/* Brand / Telemetry Pill */}
-        <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-[11px] font-mono text-teal-300 uppercase tracking-wider shadow-xl">
+        <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-[11px] font-mono text-teal-300 uppercase tracking-wider shadow-lg">
           <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse" />
           <span>Telemetry: Online · ARS-984</span>
         </div>
@@ -56,12 +51,12 @@ export default function LoginPage() {
         <button
           onClick={toggleTheme}
           title={theme === 'light' ? 'Switch to Night Mode' : 'Switch to Day Mode'}
-          className="relative w-13 h-6.5 rounded-full flex items-center p-0.5 cursor-pointer select-none transition-all duration-300 border border-white/20 glass-panel-light shrink-0 backdrop-blur-md"
+          className="relative w-13 h-6.5 rounded-full flex items-center p-0.5 cursor-pointer select-none transition-all duration-300 border border-white/20 shrink-0 backdrop-blur-md"
           style={{
             background: theme === 'light' 
-              ? 'linear-gradient(to right, rgba(255,255,255,0.9), rgba(125,211,252,0.5))' 
-              : 'rgba(7, 10, 18, 0.6)',
-            boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.1)'
+              ? 'linear-gradient(to right, #ffffff, #e2e8f0)' 
+              : 'rgba(7, 10, 18, 0.75)',
+            boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.05)'
           }}
         >
           <div
@@ -72,7 +67,7 @@ export default function LoginPage() {
               boxShadow: theme === 'light'
                 ? 'inset 1px 1px 1px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.2)'
                 : 'inset 1px 1px 1px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.4)',
-              border: '1px solid rgba(255,255,255,0.15)'
+              border: '1px solid rgba(255,255,255,0.2)'
             }}
           >
             {theme === 'light' ? (
@@ -84,43 +79,75 @@ export default function LoginPage() {
         </button>
       </header>
 
-      {/* Centered Translucent Glass Login Panel */}
+      {/* Centered Spaceframe Command Card */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-6 sm:py-10">
-        <div className="w-full max-w-md rounded-[28px] p-7 sm:p-9 bg-black/45 backdrop-blur-xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] text-left space-y-6">
+        <div className="w-full max-w-5xl rounded-[32px] overflow-hidden border border-white/15 shadow-2xl bg-[#0b0f19]/90 backdrop-blur-2xl grid grid-cols-1 md:grid-cols-12 relative z-10 my-4">
           
-          {/* Header */}
-          <div className="space-y-2 text-left">
-            <div className="flex items-center gap-2.5 mb-1">
-              <div className="h-9 w-9 rounded-xl bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-300 shadow-[0_0_15px_rgba(20,184,166,0.35)]">
-                <Orbit size={18} className="animate-spin-slow" />
-              </div>
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-teal-300">
-                Mission Station
-              </span>
+          {/* Left Side: Satellite Space Observation Artwork */}
+          <div 
+            className="md:col-span-6 lg:col-span-7 relative min-h-[360px] md:min-h-[540px] bg-cover bg-center overflow-hidden flex flex-col justify-between p-8 border-b md:border-b-0 md:border-r border-white/10"
+            style={{
+              backgroundImage: `url('/satellite_auth_bg.jpg')`
+            }}
+          >
+            {/* Top telemetry indicator badge */}
+            <div className="flex items-center gap-2 self-start px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-mono text-teal-300 uppercase tracking-wider shadow-lg">
+              <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse" />
+              <span>Telemetry: Online · ARS-984</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
-              Sign In
-            </h1>
-            <p className="text-xs text-zinc-200">
-              Welcome to the mission station SATQuery AI
-            </p>
+
+            {/* Bottom-left floating glass badge */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-black/65 backdrop-blur-xl border border-white/15 text-left max-w-xs shadow-2xl space-y-1">
+              <div className="text-xs font-mono font-bold uppercase tracking-wider text-teal-400">
+                Private Station
+              </div>
+              <div className="text-base font-extrabold text-white leading-tight">
+                Mission to Earth Orbit
+              </div>
+              <p className="text-[11px] text-zinc-300 leading-snug">
+                Multimodal satellite vision models connected.
+              </p>
+            </div>
           </div>
 
-          {/* Login Form */}
-          <LoginForm />
+          {/* Right Side: Form Panel */}
+          <div className="md:col-span-6 lg:col-span-5 bg-[#0f1422]/95 p-7 sm:p-10 flex flex-col justify-center text-left space-y-5">
+            
+            {/* Header */}
+            <div className="space-y-1 text-left">
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="h-9 w-9 rounded-xl satquery-logo-badge p-1 flex items-center justify-center shrink-0">
+                  <img src="/SatQuery.png" alt="SATQuery AI Logo" className="h-full w-full object-contain" />
+                </div>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-teal-400">
+                  Mission Station
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Sign In
+              </h1>
+              <p className="text-xs text-zinc-400">
+                Welcome to the mission station SATQuery AI
+              </p>
+            </div>
 
-          {/* Register Footer Link */}
-          <div className="pt-3 border-t border-white/15 text-center text-xs text-zinc-200">
-            <span>Don't have access credentials? </span>
-            <Link href="/register" className="font-semibold text-teal-300 hover:text-teal-200 underline underline-offset-4 ml-1">
-              Register Station
-            </Link>
+            {/* Login Form */}
+            <LoginForm />
+
+            {/* Register Footer Link */}
+            <div className="pt-2 border-t border-white/10 text-center text-xs text-zinc-400">
+              <span>Don't have access credentials? </span>
+              <Link href="/register" className="font-semibold text-teal-400 hover:text-teal-300 underline underline-offset-4 ml-1">
+                Register Station
+              </Link>
+            </div>
           </div>
+
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-20 py-4 text-center text-[11px] font-mono text-zinc-300/80 drop-shadow">
+      <footer className="relative z-20 py-4 text-center text-[11px] font-mono text-zinc-400">
         SATQuery AI · Earth Observation Intelligence
       </footer>
 
