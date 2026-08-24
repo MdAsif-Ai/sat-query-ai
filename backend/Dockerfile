@@ -1,6 +1,11 @@
+# Use a slim Python base image
 FROM python:3.11-slim
 
-# Install system dependencies for rasterio, opencv, and GDAL
+# Set environment variables to prevent Python from writing pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies for rasterio, opencv, GDAL, and general build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -18,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set working directory
 WORKDIR /app
 
-# Install PyTorch first with CUDA 12.1 support
+# Install PyTorch with CUDA 12.1 support FIRST
 # Using specific index URL for compatibility
 RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
@@ -26,8 +31,11 @@ RUN pip install --no-cache-dir torch torchvision --index-url https://download.py
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application code
+COPY . .
+
 # Expose port
 EXPOSE 8000
 
-# Command to run the application (will be replaced by actual main.py later)
+# Command to run the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

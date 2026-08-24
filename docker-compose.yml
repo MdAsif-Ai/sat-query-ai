@@ -1,24 +1,24 @@
-
-#### `docker-compose.yml`
-```yaml
 version: '3.8'
 
 services:
-  satquery-api:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: satquery_backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     env_file:
       - .env
     volumes:
+      # Mount application code for hot-reloading during development
       - ./backend:/app
+      # Persistent storage for uploads, masks, and reports
       - ./storage:/app/storage
+      # Persistent storage for model weights (Do NOT bake into image)
       - ./models:/app/models
-      - hf_cache:/root/.cache/huggingface
+    # Expose port to host for direct API testing if needed
+    ports:
+      - "8000:8000"
     deploy:
       resources:
         reservations:
@@ -26,6 +26,37 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-volumes:
-  hf_cache:
+  frontend:
+    # Assuming you have a Next.js app in ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: satquery_frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    # Internal port only, Nginx handles external routing
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:latest
+    container_name: satquery_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
