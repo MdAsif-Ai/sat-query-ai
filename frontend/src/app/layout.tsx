@@ -18,7 +18,10 @@ export const metadata: Metadata = {
   title: "SATQuery AI - Remote Sensing Vision-Language Assistant",
   description: "An Agentic Vision-Language Assistant for Multimodal Remote-Sensing Image Analysis",
   icons: {
-    icon: "/SatQuery.png",
+    icon: [
+      { url: "/SatQuery.png", type: "image/png" },
+      { url: "/favicon.ico" }
+    ],
     shortcut: "/SatQuery.png",
     apple: "/SatQuery.png",
   },
@@ -36,6 +39,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="icon" href="/SatQuery.png" type="image/png" sizes="any" />
+        <link rel="apple-touch-icon" href="/SatQuery.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
