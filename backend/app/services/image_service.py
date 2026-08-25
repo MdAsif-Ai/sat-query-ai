@@ -17,9 +17,12 @@ class ProcessedImage(BaseModel):
     """
     Structured object holding the model-ready image and its original geospatial metadata.
     """
+    # Allow non-Pydantic types like PIL.Image.Image
+    model_config = {"arbitrary_types_allowed": True}
+    
     pil_image: Image.Image  # The model-ready RGB PIL image
     metadata: ImageMetadata
-    file_path: str          # Path to the original file on disk
+    file_path: str          # Path to the original file on disk         # Path to the original file on disk
 
 class ImageService:
     ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}

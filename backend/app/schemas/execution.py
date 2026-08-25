@@ -1,8 +1,7 @@
-# backend/app/schemas/execution.py
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, Field  # <-- Added Field to import
 from app.schemas.models import ModelExecution
-from app.schemas.enums import TaskType  # <-- IMPORT FROM HERE
+from app.schemas.enums import TaskType
 
 class AgentDecision(BaseModel):
     step_id: int
