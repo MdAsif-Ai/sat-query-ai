@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     # Hugging Face & Model Cache
     HF_HOME: str = "./models/hf_cache"
     MODEL_CACHE_DIR: str = "./models/checkpoints"
+    
+    # Storage Paths (Relative to backend directory) - FIXED TYPE HINTS HERE
+    STORAGE_DIR: str = "./storage"
+    MODEL_DIR: str = "./models"
 
     # Hardware & Processing Limits
     DEVICE: str = "cuda"  # or "cpu"
