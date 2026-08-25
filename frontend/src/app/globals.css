@@ -486,17 +486,20 @@ body {
 
 /* Light Mode Card and Container Background Overrides */
 .light [class*="bg-[#111827]"],
+.light [class*="bg-[#0f172a]"],
 .light .bg-\[\#111827\]\/75,
 .light .bg-\[\#111827\]\/85,
 .light .bg-\[\#111827\]\/90,
 .light .bg-\[\#111827\]\/95,
-.light .bg-\[\#111827\] {
+.light .bg-\[\#111827\],
+.light .bg-\[\#0f172a\] {
   background-color: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.08) !important;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02) !important;
 }
 
 .light [class*="hover:bg-[#111827]"]:hover,
+.light [class*="hover:bg-[#0f172a]"]:hover,
 .light .hover\:bg-\[\#111827\]\/95:hover {
   background-color: #f8fafc !important;
 }
@@ -509,7 +512,10 @@ body {
 }
 
 .light .bg-black\/80,
-.light .bg-\[\#070A12\] {
+.light [class*="bg-[#070A12]"],
+.light .bg-\[\#070A12\],
+.light .bg-\[\#070A12\]\/80,
+.light .bg-\[\#070A12\]\/90 {
   background-color: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.09) !important;
 }
@@ -546,7 +552,11 @@ body {
 }
 
 /* Light text color mappings - all general headings and content text in cards become bold & dark in light mode */
-.light .text-white { color: #09090b !important; }
+.light .text-white,
+.light .text-white\/95,
+.light .text-white\/90,
+.light .text-white\/85,
+.light .text-white\/80 { color: #09090b !important; }
 .light .text-zinc-100 { color: #09090b !important; }
 .light .text-zinc-200 { color: #18181b !important; }
 .light .text-zinc-300 { color: #27272a !important; }
@@ -634,8 +644,20 @@ body {
 .light .border-amber-500\/20, .light .border-amber-500\/30, .light .border-amber-500\/40 { border-color: #fde68a !important; }
 
 .light .bg-rose-500\/10 { background-color: #fff1f2 !important; }
+.light .bg-rose-500\/15 { background-color: #ffe4e6 !important; }
+.light .bg-rose-500\/20 { background-color: #fecdd3 !important; }
 .light .text-rose-300 { color: #be123c !important; }
-.light .border-rose-500\/30 { border-color: #fecdd3 !important; }
+.light .text-rose-400 { color: #e11d48 !important; }
+.light .text-rose-500 { color: #e11d48 !important; }
+.light .text-rose-600 { color: #be123c !important; }
+.light .border-rose-500\/20,
+.light .border-rose-500\/30,
+.light .border-rose-500\/40 { border-color: #fecdd3 !important; }
+.light .hover\:text-rose-300:hover,
+.light .hover\:text-rose-400:hover { color: #9f1239 !important; }
+.light .hover\:bg-rose-500\/10:hover { background-color: #fff1f2 !important; }
+.light .hover\:bg-rose-500\/15:hover { background-color: #ffe4e6 !important; }
+.light .hover\:bg-rose-500\/20:hover { background-color: #fecdd3 !important; }
 
 .light .text-brand-emerald { color: #059669 !important; }
 .light .text-brand-teal { color: #0d9488 !important; }

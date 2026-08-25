@@ -146,15 +146,15 @@ export function HistoryItem({
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl p-1.5 shadow-2xl border border-white/20 z-50 animate-in fade-in duration-100 bg-[#0f172a] backdrop-blur-2xl">
+              <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl p-1.5 shadow-2xl border border-black/10 dark:border-white/20 z-50 animate-in fade-in duration-100 bg-white dark:bg-[#0f172a] backdrop-blur-2xl">
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     onSelect(item);
                   }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                 >
-                  <Radio size={14} className="text-teal-400" />
+                  <Radio size={14} className="text-teal-600 dark:text-teal-400 shrink-0" />
                   <span>Open Chat</span>
                 </button>
                 <button
@@ -162,20 +162,20 @@ export function HistoryItem({
                     setMenuOpen(false);
                     onOpenInDashboard(item);
                   }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                 >
-                  <ExternalLink size={14} className="text-purple-400" />
+                  <ExternalLink size={14} className="text-purple-600 dark:text-purple-400 shrink-0" />
                   <span>Open in Workspace</span>
                 </button>
-                <div className="h-px bg-white/10 my-1" />
+                <div className="h-px bg-zinc-200 dark:bg-white/10 my-1" />
                 <button
                   onClick={() => {
                     setMenuOpen(false);
                     onDeleteRequest(item);
                   }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/15 hover:text-rose-300 rounded-lg transition-colors cursor-pointer"
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:text-rose-300 dark:hover:bg-rose-500/15 rounded-lg transition-colors cursor-pointer"
                 >
-                  <Trash2 size={14} className="text-rose-400" />
+                  <Trash2 size={14} className="text-rose-600 dark:text-rose-400 shrink-0" />
                   <span>Delete Record</span>
                 </button>
               </div>

@@ -22,8 +22,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       name: 'Dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
-      accentColor: 'text-teal-500 dark:text-teal-400',
-      activeBorder: 'border-teal-500',
+      accentColor: 'text-emerald-500 dark:text-emerald-400',
+      activeBorder: 'border-emerald-500',
     },
     {
       name: 'History',
@@ -79,7 +79,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="space-y-4">
           <div className="px-4 py-2 select-none animate-ease-up">
             <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 font-bold">
-              <Radio size={12} className="text-teal-500 dark:text-teal-400 animate-pulse" />
+              <Radio size={12} className="text-emerald-500 dark:text-emerald-400 animate-pulse" />
               <span>Console Navigation</span>
             </div>
           </div>
@@ -99,7 +99,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs select-none transition-all duration-200 group",
                     delayClass,
                     isActive
-                      ? "bg-teal-500 text-slate-950 font-extrabold shadow-md border border-teal-400 dark:bg-teal-400 dark:text-zinc-950 dark:font-extrabold dark:border-teal-300 dark:shadow-[0_0_20px_rgba(45,212,191,0.4)] cursor-default"
+                      ? "bg-emerald-500 text-white font-bold shadow-md border border-emerald-400 dark:bg-emerald-500 dark:text-white dark:font-bold dark:border-emerald-400 dark:shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-default"
                       : "text-slate-700 hover:text-slate-950 hover:bg-slate-100 font-semibold dark:text-zinc-400 dark:hover:text-white dark:hover:bg-white/5 border border-transparent cursor-pointer hover:translate-x-1"
                   )}
                 >
@@ -108,8 +108,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={cn(
                         "h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 shrink-0",
                         isActive
-                          ? "bg-black/15 text-slate-950 dark:bg-black/20 dark:text-zinc-950"
-                          : "bg-slate-100 text-slate-700 group-hover:bg-teal-500/15 group-hover:text-teal-800 dark:bg-white/5 dark:text-zinc-400 dark:group-hover:bg-teal-500/10 dark:group-hover:text-teal-300 group-hover:scale-105"
+                          ? "bg-black/15 text-white dark:bg-black/20 dark:text-white"
+                          : "bg-slate-100 text-slate-700 group-hover:bg-emerald-500/15 group-hover:text-emerald-800 dark:bg-white/5 dark:text-zinc-400 dark:group-hover:bg-emerald-500/10 dark:group-hover:text-emerald-300 group-hover:scale-105"
                       )}
                     >
                       <Icon size={16} />
@@ -118,7 +118,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={cn(
                         "text-xs font-semibold tracking-wide transition-colors duration-200",
                         isActive
-                          ? "text-slate-950 dark:text-zinc-950 font-extrabold"
+                          ? "text-white font-bold"
                           : "text-slate-700 group-hover:text-slate-950 dark:text-zinc-400 dark:group-hover:text-white"
                       )}
                     >
@@ -127,7 +127,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </div>
 
                   {isActive && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-slate-950 dark:bg-zinc-950 shadow-xs" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-white shadow-xs" />
                   )}
                 </Link>
               );

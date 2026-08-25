@@ -42,14 +42,14 @@ export function VisualEvidenceViewer({ evidence, metadata, query }: VisualEviden
   return (
     <GlassCard variant="elevated" className="border-white/10 overflow-hidden flex flex-col p-0 select-none shadow-2xl">
       {/* Top HUD Telemetry Bar */}
-      <div className="bg-[#070A12]/90 backdrop-blur-md px-4 py-2.5 border-b border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+      <div className="bg-slate-50 dark:bg-[#070A12]/90 backdrop-blur-md px-4 py-2.5 border-b border-black/10 dark:border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono transition-colors">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-bold text-white uppercase tracking-wider">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+          <span className="font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
             Observation Canvas Viewport
           </span>
-          <span className="text-zinc-500 hidden sm:inline">|</span>
-          <span className="text-zinc-400 text-[10px] hidden sm:inline">
+          <span className="text-zinc-400 dark:text-zinc-500 hidden sm:inline">|</span>
+          <span className="text-zinc-600 dark:text-zinc-400 text-[10px] hidden sm:inline">
             {metadata?.crs || 'EPSG:32643 (UTM Zone 43N)'}
           </span>
         </div>
@@ -61,7 +61,9 @@ export function VisualEvidenceViewer({ evidence, metadata, query }: VisualEviden
             onClick={() => setShowCrosshairs(!showCrosshairs)}
             className={cn(
               "p-1.5 rounded-lg border text-[10px] flex items-center gap-1 transition-colors cursor-pointer",
-              showCrosshairs ? "bg-teal-500/20 text-teal-300 border-teal-500/40" : "bg-white/5 text-zinc-400 border-white/10"
+              showCrosshairs 
+                ? "bg-teal-500/15 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border-teal-500/30 dark:border-teal-500/40 font-semibold" 
+                : "bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10"
             )}
             title="Toggle Coordinate Reticle"
           >
@@ -72,13 +74,13 @@ export function VisualEvidenceViewer({ evidence, metadata, query }: VisualEviden
             type="button"
             onClick={handleZoomOut}
             disabled={zoom <= 0.75}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer disabled:opacity-30"
+            className="p-1.5 rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-30"
             title="Zoom Out"
           >
             <ZoomOut size={12} />
           </button>
 
-          <span className="text-[10px] text-zinc-300 font-mono w-10 text-center">
+          <span className="text-[10px] text-zinc-800 dark:text-zinc-200 font-mono font-bold w-10 text-center select-none">
             {Math.round(zoom * 100)}%
           </span>
 
@@ -86,7 +88,7 @@ export function VisualEvidenceViewer({ evidence, metadata, query }: VisualEviden
             type="button"
             onClick={handleZoomIn}
             disabled={zoom >= 3}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer disabled:opacity-30"
+            className="p-1.5 rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white transition-colors cursor-pointer disabled:opacity-30"
             title="Zoom In"
           >
             <ZoomIn size={12} />
@@ -95,7 +97,7 @@ export function VisualEvidenceViewer({ evidence, metadata, query }: VisualEviden
           <button
             type="button"
             onClick={handleResetZoom}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white transition-colors cursor-pointer"
             title="Reset Zoom"
           >
             <RotateCcw size={12} />
@@ -189,13 +191,13 @@ export function VisualEvidenceViewer({ evidence, metadata, query }: VisualEviden
 
       {/* Bottom Derived Telemetry Summary Cards */}
       {evidence.derivedMetrics && Object.keys(evidence.derivedMetrics).length > 0 && (
-        <div className="p-3.5 bg-[#070A12]/80 border-t border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-left">
+        <div className="p-3.5 bg-slate-50 dark:bg-[#070A12]/80 border-t border-black/5 dark:border-white/5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-left">
           {Object.entries(evidence.derivedMetrics).map(([key, val]) => (
-            <div key={key} className="bg-black/40 p-2 rounded-lg border border-white/5">
+            <div key={key} className="bg-white dark:bg-black/40 p-2 rounded-lg border border-black/5 dark:border-white/5 shadow-xs">
               <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-wider block truncate">
                 {key}
               </span>
-              <span className="text-xs font-mono font-bold text-teal-300 block truncate">
+              <span className="text-xs font-mono font-bold text-teal-700 dark:text-teal-300 block truncate">
                 {String(val)}
               </span>
             </div>
