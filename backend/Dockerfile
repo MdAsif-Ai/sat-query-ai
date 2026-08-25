@@ -25,11 +25,11 @@ WORKDIR /app
 
 # Install PyTorch with CUDA 12.1 support FIRST
 # Using specific index URL for compatibility
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cu121
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 # Copy requirements and install remaining dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu121
 
 # Copy application code
 COPY . .

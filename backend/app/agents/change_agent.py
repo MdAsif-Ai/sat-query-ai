@@ -34,7 +34,7 @@ class ChangeAgent:
 
         def new_step(msg: str) -> ExecutionStep:
             nonlocal step_id
-            step = ExecutionStep(step_id=step_id, status="running", message=msg, timestamp=str(time.time()))
+            step = ExecutionStep(step_id= step_id, status="running", message=msg, timestamp=str(time.time()))
             step_id += 1
             trace.append(step)
             return step

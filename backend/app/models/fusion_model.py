@@ -1,7 +1,5 @@
 import os
-import sys
 import torch
-import torch.nn.functional as F
 import torchvision.transforms as transforms
 import numpy as np
 from typing import Dict, Any, List
@@ -11,19 +9,6 @@ from loguru import logger
 from app.models.base import BaseRemoteSensingModel
 from app.core.config import settings
 from app.core.exceptions import ModelUnavailableError, ModelInferenceFailureError, IncompatibleImagePairError
-
-# Add AnySat directory to sys path (Assumes AnySat repo is cloned into the models directory)
-ANYSAT_REPO_PATH = os.path.join(settings.MODEL_CACHE_DIR, "AnySat")
-if ANYSAT_REPO_PATH not in sys.path:
-    sys.path.append(ANYSAT_REPO_PATH)
-
-# Attempt to import AnySat
-try:
-    from model import AnySat
-    ANYSAT_AVAILABLE = True
-except ImportError:
-    ANYSAT_AVAILABLE = False
-    logger.warning("AnySat repository not found or failed to import. Please clone https://github.com/gastruc/AnySat into the models directory.")
 
 class FusionModel(BaseRemoteSensingModel):
     """
@@ -39,18 +24,26 @@ class FusionModel(BaseRemoteSensingModel):
         self.quantized = False
         
     def load(self):
-        """Loads the AnySat model."""
+        """Loads the AnySat model using torch.hub."""
         if self.loaded:
             return
             
-        if not ANYSAT_AVAILABLE:
-            raise ModelUnavailableError("AnySat code is not available. Please clone the repository.")
-            
-        logger.info(f"Loading {self.model_id} (AnySat)...")
+        logger.info(f"Loading {self.model_id} (AnySat) via torch.hub...")
         
         try:
-            # AnySat provides a builder method
-            self.model = AnySat.build_model().to(self.device).eval()
+            # We pass flash_attn=False to avoid requiring the flash-attn package which fails to build
+            self.model = torch.hub.load('gastruc/anysat', 'anysat', pretrained=False, trust_repo=True, flash_attn=False).to(self.device).eval()
+            
+            # Load the checkpoint manually if we have it locally
+            checkpoint_path = os.path.join(settings.MODEL_CACHE_DIR, "AnySat.pth")
+            if os.path.exists(checkpoint_path):
+                state_dict = torch.load(checkpoint_path, map_location=self.device, weights_only=True)
+                if 'state_dict' in state_dict:
+                    state_dict = state_dict['state_dict']
+                self.model.model.load_state_dict(state_dict)
+            else:
+                logger.warning(f"AnySat checkpoint not found at {checkpoint_path}. Weights may be random.")
+                
             self.loaded = True
             logger.success("AnySat Fusion model loaded successfully.")
         except Exception as e:
@@ -60,26 +53,31 @@ class FusionModel(BaseRemoteSensingModel):
     def estimate_memory(self) -> float:
         return 1800.0
 
-    def _prepare_tensors(self, image: Image.Image, target_bands: int) -> torch.Tensor:
-        """Converts PIL Image to tensor and ensures it has the correct number of bands."""
-        transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor()
-        ])
-        
-        # PIL Image opened as RGB has 3 bands.
-        tensor = transform(image).unsqueeze(0).to(self.device) # Shape: [1, 3, 224, 224]
-        
-        # AnySat Optical expects 4 bands (R,G,B,NIR). We duplicate the Red band as a dummy NIR band.
-        if target_bands == 4 and tensor.shape[1] == 3:
-            dummy_nir = tensor[:, 0:1, :, :] 
-            tensor = torch.cat([tensor, dummy_nir], dim=1)
+    def _prepare_tensors(self, image: Image.Image, modality: str) -> torch.Tensor:
+        """Converts PIL Image to tensor with correct size and dimensions for AnySat."""
+        if modality == 'spot':
+            # Spot expects 3 channels, resolution 1.0. We use 220x220 to avoid OOM
+            transform = transforms.Compose([
+                transforms.Resize((220, 220)),
+                transforms.ToTensor()
+            ])
+            # [1, 3, 220, 220]
+            tensor = transform(image.convert("RGB")).unsqueeze(0).to(self.device)
+            return tensor
             
-        # AnySat SAR expects 2 bands (VV, VH). We duplicate the single band if we only have 1, or take first 2.
-        elif target_bands == 2 and tensor.shape[1] == 3:
-            tensor = tensor[:, 0:2, :, :]
+        elif modality == 's1':
+            # S1 expects 3 channels, resolution 10.0, and 5D tensor (temporal). 
+            # 22x22 at res 10.0 matches the spatial footprint of 220x220 at res 1.0.
+            transform = transforms.Compose([
+                transforms.Resize((22, 22)),
+                transforms.ToTensor()
+            ])
+            tensor = transform(image.convert("RGB")).unsqueeze(0).to(self.device)
+            # Add temporal dimension: [1, 1, 3, 22, 22]
+            tensor = tensor.unsqueeze(1)
+            return tensor
             
-        return tensor
+        return None
 
     def _run_inference(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -93,39 +91,31 @@ class FusionModel(BaseRemoteSensingModel):
             raise IncompatibleImagePairError("Optical and SAR images must have the exact same spatial dimensions (width, height).")
             
         # 2. Preprocess Inputs
-        # Optical: Expects 4 bands (R,G,B,NIR)
-        opt_tensor = self._prepare_tensors(optical_image, target_bands=4)
-        # SAR: Expects 2 bands (VV, VH)
-        sar_tensor = self._prepare_tensors(sar_image, target_bands=2)
+        opt_tensor = self._prepare_tensors(optical_image, 'spot')
+        sar_tensor = self._prepare_tensors(sar_image, 's1')
+        sar_dates = torch.tensor([[1]]).to(self.device) # Dummy DOY
         
         # 3. Run Inference (Forward pass)
         with torch.no_grad():
-            # AnySat's forward_features returns a dictionary of embeddings
-            outputs = self.model.forward_features({"optical": opt_tensor, "sar": sar_tensor})
+            outputs = self.model({
+                'spot': opt_tensor,
+                's1': sar_tensor,
+                's1_dates': sar_dates
+            }, patch_size=10, output='dense')
             
         # 4. Process Outputs
-        # AnySat provides a global representation (embedding) and patch-level features
-        # We extract these to provide structured evidence for downstream LLM reasoning.
-        fused_embeddings = outputs.get("x", None) # Patch tokens
-        cls_token = outputs.get("cls_token", None) # Global representation
-        
-        if fused_embeddings is not None:
-            # Calculate mean embedding for a condensed global representation
-            global_embedding = torch.mean(fused_embeddings, dim=1).cpu().numpy().flatten().tolist()
-            embedding_dim = fused_embeddings.shape[-1]
-            patch_shape = fused_embeddings.shape[1:3] if fused_embeddings.dim() == 4 else None
-        else:
-            global_embedding = []
-            embedding_dim = 0
-            patch_shape = None
+        # Output shape is [1, 22, 22, 1536] (dense features)
+        global_embedding = torch.mean(outputs, dim=(1, 2)).cpu().numpy().flatten().tolist()
+        embedding_dim = outputs.shape[-1]
+        patch_shape = [outputs.shape[1], outputs.shape[2]]
             
         return {
             "fused": True,
             "embedding_dimension": embedding_dim,
             "global_embedding_sample": global_embedding[:10],  # First 10 values for debug/display
-            "patch_shape": list(patch_shape) if patch_shape else None,
+            "patch_shape": patch_shape,
             "model_name": self.model_name,
-            "message": "Successfully extracted joint multimodal features. Semantic classification requires a downstream task head not present in the base foundation model."
+            "message": "Successfully extracted joint multimodal features using AnySat."
         }
 
     def infer(self, optical_image: Image.Image, sar_image: Image.Image) -> Dict[str, Any]:

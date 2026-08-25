@@ -8,6 +8,9 @@ class ModelStatus(str, Enum):
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
     UNLOADED = "UNLOADED"
+    REGISTERED = "REGISTERED"
+    LOADING = "LOADING"
+    UNAVAILABLE = "UNAVAILABLE"
 
 class ModelInfo(BaseModel):
     model_name: str

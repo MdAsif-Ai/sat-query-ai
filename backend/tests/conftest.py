@@ -12,6 +12,7 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test.db" # Use local SQLite 
 
 from app.main import app
 from app.db.database import init_db, engine, Base
+import app.db.repositories # Import to register models with Base.metadata
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -20,10 +21,13 @@ def event_loop():
     yield loop
     loop.close()
 
-@pytest.fixture(scope="session", autouse=True)
+import pytest_asyncio
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_database():
     """Create database tables before tests and drop them after."""
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with engine.begin() as conn:

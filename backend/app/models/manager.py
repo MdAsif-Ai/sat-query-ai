@@ -99,10 +99,13 @@ class ModelManager:
         async with self._locks[name]:
             # Double check after acquiring lock
             if model.is_loaded():
+                model.status = ModelStatus.LOADED
                 self._last_used[name] = time.time()
                 return
-                
+                 
             logger.info(f"Acquired lock. Loading model: {name}")
+            model.status = ModelStatus.LOADING
+            model.error_message = None
             
             # Estimate memory and check if we need to free up space
             required_mb = model.estimate_memory()
@@ -114,6 +117,8 @@ class ModelManager:
                 freed = self._free_up_vram(name)
                 
                 if not freed:
+                    model.status = ModelStatus.UNAVAILABLE
+                    model.error_message = f"Insufficient VRAM. Required: {required_mb}MB, Available: {available_mb}MB"
                     raise GPUMemoryError(f"Cannot load {name}. No models available to unload. Required: {required_mb}MB, Available: {available_mb}MB")
                     
                 # Recheck memory after cleanup
@@ -121,11 +126,14 @@ class ModelManager:
                 gpu_status = self.get_gpu_status()
                 available_mb = gpu_status["free_mb"]
                 if available_mb < required_mb:
+                    model.status = ModelStatus.UNAVAILABLE
+                    model.error_message = f"Insufficient VRAM after cleanup. Required: {required_mb}MB, Available: {available_mb}MB"
                     raise GPUMemoryError(f"Still insufficient VRAM after cleanup for {name}. Required: {required_mb}MB, Available: {available_mb}MB")
-
+ 
             # Attempt to load
             try:
                 model.load()
+                model.status = ModelStatus.LOADED
                 self._last_used[name] = time.time()
                 logger.success(f"Successfully loaded model: {name}")
             except torch.cuda.OutOfMemoryError as e:
@@ -135,9 +143,16 @@ class ModelManager:
                 self._free_up_vram(name)
                 try:
                     model.load()
+                    model.status = ModelStatus.LOADED
+                    self._last_used[name] = time.time()
+                    logger.success(f"Successfully loaded model: {name} after OOM retry")
                 except Exception as e2:
+                    model.status = ModelStatus.FAILED
+                    model.error_message = f"CUDA OOM: {str(e2)}"
                     raise GPUMemoryError(f"Failed to load {name} even after aggressive cleanup: {e2}") from e2
             except Exception as e:
+                model.status = ModelStatus.FAILED
+                model.error_message = str(e)
                 logger.error(f"Failed to load model {name}: {e}")
                 raise ModelUnavailableError(name) from e
 

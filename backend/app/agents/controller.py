@@ -30,6 +30,7 @@ class SatQueryController:
         self.step_id_counter = 0
         self.warnings: List[str] = []
         self.fallback_used = False
+        self.last_processed_images: List[Any] = []
 
     def _add_step(self, message: str, status: str = "running") -> ExecutionStep:
         """Helper to create and store execution steps."""
@@ -53,7 +54,8 @@ class SatQueryController:
         self.warnings = []
         self.fallback_used = False
         self.step_id_counter = 0
-        
+        import uuid
+        request_id = f"req_{int(start_time)}_{uuid.uuid4().hex[:6]}"
         try:
             # --- 1. Receive query and uploaded images ---
             # --- 2. Validate files ---
@@ -69,8 +71,9 @@ class SatQueryController:
                     processed_images.append(p_img)
                 except SatQueryException as e:
                     self._add_step(f"Image validation failed: {e.message}", status="failed")
-                    return self._format_error_response(query, e.message, e.code)
+                    return self._format_error_response(query, e.message, 400, request_id=request_id)
                     
+            self.last_processed_images = processed_images
             step.status = "success"
             step.message = f"Successfully processed {len(processed_images)} image(s)."
 
@@ -155,7 +158,7 @@ class SatQueryController:
             total_latency = (time.time() - start_time) * 1000
             
             final_trace = ExecutionTrace(
-                request_id=f"req_{int(start_time)}",
+                request_id=request_id,
                 steps=self.trace_steps,
                 total_duration_ms=total_latency
             )
@@ -175,7 +178,7 @@ class SatQueryController:
 
         except Exception as e:
             logger.exception("Unhandled error in SatQueryController")
-            return self._format_error_response(query, f"Internal server error: {str(e)}", 500)
+            return self._format_error_response(query, f"Internal server error: {str(e)}", 500, request_id=request_id)
 
     async def _execute_agent(self, task_type: TaskType, query: str, images: List[ProcessedImage]) -> Dict[str, Any]:
         """Routes to the correct specialist agent."""
@@ -217,7 +220,7 @@ class SatQueryController:
         if self.fallback_used:
             self.warnings.append("External VLM fallback was utilized for final synthesis.")
 
-    def _format_error_response(self, query: str, message: str, code: int) -> AnalysisResponse:
+    def _format_error_response(self, query: str, message: str, code: int, request_id: str = "error") -> AnalysisResponse:
         """Formats a standard error response."""
         error = ErrorResponse(error_type="ProcessingError", message=message, code=code)
         return AnalysisResponse(
@@ -228,7 +231,7 @@ class SatQueryController:
             evidence=[],
             visual_artifacts=[],
             model_info=[],
-            execution_trace=ExecutionTrace(request_id="error", steps=self.trace_steps, total_duration_ms=0.0),
+            execution_trace=ExecutionTrace(request_id=request_id, steps=self.trace_steps, total_duration_ms=0.0),
             warnings=self.warnings,
             errors=[error]
         )

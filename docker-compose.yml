@@ -16,6 +16,8 @@ services:
       - ./storage:/app/storage
       # Persistent storage for model weights (Do NOT bake into image)
       - ./models:/app/models
+      # Mount GeoChat codebase at the exact same path as the host
+      - ../GeoChat:/home/techpark-10/Documents/GeoChat:ro
     # Expose port to host for direct API testing if needed
     ports:
       - "8000:8000"

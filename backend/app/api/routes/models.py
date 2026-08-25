@@ -15,4 +15,9 @@ async def model_health(model_name: str):
         raise HTTPException(status_code=404, detail=f"Model '{model_name}' not found.")
     
     health_status = model_manager.health().get(model_name)
-    return {"model": model_name, "status": health_status.value if health_status else "UNKNOWN"}
+    model_instance = model_manager._registry[model_name]
+    return {
+        "model": model_name, 
+        "status": health_status.value if health_status else "UNKNOWN",
+        "error": getattr(model_instance, 'error_message', None)
+    }

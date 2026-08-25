@@ -10,7 +10,10 @@ class Base(DeclarativeBase):
 
 # Create async engine
 # Fallback to SQLite if DATABASE_URL is not provided (for local testing without Docker/Supabase)
+import sys
 db_url = settings.DATABASE_URL or "sqlite+aiosqlite:///./satquery.db"
+if "pytest" in sys.modules:
+    db_url = "sqlite+aiosqlite:///./test.db"
 
 if db_url.startswith("sqlite"):
     engine = create_async_engine(db_url, echo=settings.DEBUG)
@@ -36,8 +39,11 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         try:
             yield session
             await session.commit()
-        except Exception:
+        except Exception as e:
             await session.rollback()
+            import traceback
+            traceback.print_exc()
+            print(f"COMMIT EXCEPTION: {e}")
             raise
         finally:
             await session.close()

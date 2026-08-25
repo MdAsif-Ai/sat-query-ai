@@ -29,6 +29,8 @@ class BaseRemoteSensingModel(ABC):
         self.loaded = False
         self.model: Optional[Any] = None
         self.processor: Optional[Any] = None
+        self.status: ModelStatus = ModelStatus.REGISTERED
+        self.error_message: Optional[str] = None
         
     @abstractmethod
     def load(self):
@@ -56,6 +58,7 @@ class BaseRemoteSensingModel(ABC):
         self.model = None
         self.processor = None
         self.loaded = False
+        self.status = ModelStatus.REGISTERED
         
         # Force memory release
         clear_gpu_memory()
@@ -105,9 +108,7 @@ class BaseRemoteSensingModel(ABC):
 
     def health(self) -> ModelStatus:
         """Reports the current health/status of the model."""
-        if self.loaded:
-            return ModelStatus.LOADED
-        return ModelStatus.UNLOADED
+        return self.status
 
     def get_metadata(self) -> ModelInfo:
         """Returns structured metadata about the model."""

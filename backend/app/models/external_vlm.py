@@ -25,21 +25,31 @@ class ExternalVLM(BaseRemoteSensingModel):
             device="cpu" # Runs on CPU via HTTP
         )
         self.quantized = False
-        
+
+
     def load(self):
-        """Validates that API keys are present in environment variables."""
         if self.loaded:
             return
-            
         self.groq_api_key = settings.GROQ_API_KEY
         self.gemini_api_key = settings.GEMINI_API_KEY
-        
+        self.groq_text_model = "llama-3.1-8b-instant"
+        self.groq_vision_model = "llama-3.2-90b-vision-preview"
+        self.gemini_vision_model = "gemini-1.5-flash"
+        self.loaded = True
+        logger.info("ExternalVLM initialized (Groq/Gemini ready).")
+ 
+        # Check for empty or placeholder keys
+        if self.groq_api_key in [None, "", "your_groq_api_key_here"]:
+            self.groq_api_key = None
+        if self.gemini_api_key in [None, "", "your_gemini_api_key_here"]:
+            self.gemini_api_key = None
+            
         if not self.groq_api_key and not self.gemini_api_key:
-            logger.warning("Neither GROQ_API_KEY nor GEMINI_API_KEY is set. External VLM will fail if called.")
+            logger.warning("Neither GROQ_API_KEY nor GEMINI_API_KEY is properly set. External VLM will fail if called.")
             
         # Default models
-        self.groq_text_model = "openai/gpt-oss-20b"
-        self.groq_vision_model = "qwen/qwen3.6-27b" # Check Groq docs for current vision model availability
+        self.groq_text_model = "llama-3.1-8b-instant"
+        self.groq_vision_model = "llama-3.2-90b-vision-preview"
         self.gemini_vision_model = "gemini-1.5-flash"
         
         self.loaded = True

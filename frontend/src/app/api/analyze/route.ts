@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000);
       
-      const upstreamRes = await fetch(`${fastapiUrl}/analyze`, {
+      const upstreamRes = await fetch(`${fastapiUrl}/api/analysis/`, {
         method: 'POST',
         body: formData,
         signal: controller.signal

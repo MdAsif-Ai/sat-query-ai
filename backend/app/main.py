@@ -1,3 +1,30 @@
+import sys
+import subprocess
+
+# Ensure correct dependencies are installed in this virtual environment
+try:
+    import pip
+except ImportError:
+    print("Bootstrapping pip in virtualenv...")
+    try:
+        subprocess.run([sys.executable, "-m", "ensurepip", "--default-pip"], check=True)
+    except Exception as e:
+        print(f"ensurepip failed: {e}. Trying to install via get-pip.py or user pip...")
+
+try:
+    import transformers
+    if transformers.__version__ != "4.44.2":
+        raise ImportError
+except ImportError:
+    print("Installing/Downgrading transformers to 4.44.2...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "transformers==4.44.2", "accelerate", "bitsandbytes", "einops", "hydra-core"], check=True)
+
+try:
+    import sam2
+except ImportError:
+    print("Installing sam2 from git...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "git+https://github.com/facebookresearch/sam2.git"], check=True)
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse

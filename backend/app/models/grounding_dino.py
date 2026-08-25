@@ -28,14 +28,12 @@ class GroundingDinoModel(BaseRemoteSensingModel):
         if self.loaded:
             return
             
-        logger.info(f"Loading {self.model_id} in float16...")
+        logger.info(f"Loading {self.model_id}...")
         
         try:
             self.processor = AutoProcessor.from_pretrained(self.model_id)
             self.model = AutoModelForZeroShotObjectDetection.from_pretrained(
-                self.model_id,
-                torch_dtype=torch.float16,
-                device_map="auto"
+                self.model_id
             ).to(self.device)
             
             self.model.eval()
@@ -65,12 +63,12 @@ class GroundingDinoModel(BaseRemoteSensingModel):
             )
             
         # 1. Preprocess inputs
-        # Ensure inputs are cast to float16 to match the model weights
         dino_inputs = self.processor(
             images=image, 
             text=text_prompt, 
             return_tensors="pt"
-        ).to(device=self.device, dtype=torch.float16)
+        )
+        dino_inputs = {k: v.to(self.device) for k, v in dino_inputs.items()}
         
         # 2. Run Inference
         with torch.no_grad():

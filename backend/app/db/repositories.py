@@ -110,8 +110,14 @@ class RequestRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_request(self, request_id: str, session_id: str, query: str) -> AnalysisRequest:
-        req = AnalysisRequest(id=request_id, session_id=session_id, query=query)
+    async def create_session(self, session_id: str) -> AnalysisSession:
+        session_obj = AnalysisSession(id=session_id)
+        self.session.add(session_obj)
+        await self.session.flush()
+        return session_obj
+
+    async def create_request(self, request_id: str, session_id: str, query: str, task_type: str) -> AnalysisRequest:
+        req = AnalysisRequest(id=request_id, session_id=session_id, query=query, task_type=task_type)
         self.session.add(req)
         await self.session.flush()
         return req
@@ -123,10 +129,10 @@ class RequestRepository:
             await self.session.flush()
 
     async def add_images(self, request_id: str, images: List[UploadedImage]):
-        req = await self.session.get(AnalysisRequest, request_id)
-        if req:
-            req.images.extend(images)
-            await self.session.flush()
+        for img in images:
+            img.request_id = request_id
+            self.session.add(img)
+        await self.session.flush()
 
     async def get_request_by_id(self, request_id: str) -> Optional[AnalysisRequest]:
         stmt = select(AnalysisRequest).where(AnalysisRequest.id == request_id)
@@ -141,10 +147,11 @@ class ResultRepository:
 
     async def save_result(self, request_id: str, answer: str, confidence: Dict[str, Any]) -> AnalysisResult:
         result = AnalysisResult(
+            id=f"res_{uuid.uuid4().hex[:8]}",
             request_id=request_id,
             answer=answer,
             confidence_score=confidence.get("score", 0.0),
-            confidence_level=confidence.get("level", "LOW"),
+            confidence_level=confidence.get("level", "LOW") if isinstance(confidence.get("level", "LOW"), str) else confidence.get("level").value,
             warnings=confidence.get("warnings", [])
         )
         self.session.add(result)
@@ -152,19 +159,20 @@ class ResultRepository:
         return result
 
     async def add_evidence(self, result_id: str, evidence_type: str, file_path: Optional[str] = None, data: Optional[Dict] = None):
-        ev = EvidenceArtifact(result_id=result_id, type=evidence_type, file_path=file_path, data=data)
+        ev = EvidenceArtifact(id=f"ev_{uuid.uuid4().hex[:8]}", result_id=result_id, type=evidence_type, file_path=file_path, data=data)
         self.session.add(ev)
         await self.session.flush()
         return ev
 
     async def save_report(self, result_id: str, file_path: str) -> Report:
-        report = Report(result_id=result_id, file_path=file_path)
+        report = Report(id=f"rep_{uuid.uuid4().hex[:8]}", result_id=result_id, file_path=file_path)
         self.session.add(report)
         await self.session.flush()
         return report
 
     async def get_result_by_request(self, request_id: str) -> Optional[AnalysisResult]:
-        stmt = select(AnalysisResult).where(AnalysisResult.request_id == request_id)
+        from sqlalchemy.orm import selectinload, joinedload
+        stmt = select(AnalysisResult).options(selectinload(AnalysisResult.evidence), joinedload(AnalysisResult.report)).where(AnalysisResult.request_id == request_id)
         result = await self.session.execute(stmt)
         return result.scalars().first()
 

@@ -30,11 +30,16 @@ async def download_report(analysis_id: str, db: AsyncSession = Depends(get_db)):
     # In a full app, you'd reconstruct the full schema from the DB relations.
     response = AnalysisResponse(
         query=request.query,
-        task_type=TaskType.SINGLE_VQA,
+        task_type=TaskType(request.task_type) if isinstance(request.task_type, str) else request.task_type,
         answer=result.answer,
-        confidence=ConfidenceScore(score=result.confidence_score, level=ConfidenceLevel(result.confidence_level), rationale=""),
-        evidence=[EvidenceItem(type=e.type, description="", data=e.data or {}) for e in result.evidence],
-        visual_artifacts=[e.file_path.replace("/storage", settings.STORAGE_DIR) for e in result.evidence if e.file_path],
+        confidence=ConfidenceScore(
+            score=result.confidence_score, 
+            level=ConfidenceLevel(result.confidence_level), 
+            rationale=""
+        ),
+        evidence=[EvidenceItem(type=EvidenceType(e.type), description="", data=e.data or {}) for e in result.evidence] if result.evidence else [],
+        visual_artifacts=[f"{settings.STORAGE_DIR}/reports/{analysis_id}.pdf"],
+        model_info=[],
         execution_trace=ExecutionTrace(request_id=analysis_id, steps=[]),
         warnings=result.warnings or []
     )
