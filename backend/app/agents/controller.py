@@ -11,7 +11,8 @@ from app.agents.grounding_agent import grounding_agent
 from app.agents.change_agent import change_agent
 from app.agents.fusion_agent import fusion_agent
 from app.models.manager import model_manager
-from app.schemas.analysis import AnalysisResponse, TaskType, ErrorResponse
+from app.schemas.analysis import AnalysisResponse, ErrorResponse
+from app.schemas.enums import TaskType
 from app.schemas.evidence import ConfidenceScore, ConfidenceLevel, EvidenceItem, EvidenceType
 from app.schemas.execution import ExecutionTrace, ExecutionStep, AgentDecision, ModelExecution
 from app.schemas.models import ModelStatus

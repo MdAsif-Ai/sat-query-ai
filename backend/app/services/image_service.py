@@ -11,8 +11,8 @@ from pydantic import BaseModel
 
 from app.core.config import settings
 from app.core.exceptions import InvalidImageError, UnsupportedFormatError
-from app.schemas.analysis import ImageMetadata, Modality
-
+from app.schemas.analysis import ImageMetadata
+from app.schemas.enums import Modality
 class ProcessedImage(BaseModel):
     """
     Structured object holding the model-ready image and its original geospatial metadata.

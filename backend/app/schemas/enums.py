@@ -1,0 +1,17 @@
+# backend/app/schemas/enums.py
+from enum import Enum
+
+class TaskType(str, Enum):
+    SINGLE_VQA = "SINGLE_VQA"
+    CAPTION = "CAPTION"
+    GROUNDING = "GROUNDING"
+    SEGMENTATION = "SEGMENTATION"
+    CHANGE_DETECTION = "CHANGE_DETECTION"
+    CHANGE_VQA = "CHANGE_VQA"
+    OPTICAL_SAR_ANALYSIS = "OPTICAL_SAR_ANALYSIS"
+
+class Modality(str, Enum):
+    OPTICAL = "OPTICAL"
+    SAR = "SAR"
+    MULTISPECTRAL = "MULTISPECTRAL"
+    UNKNOWN = "UNKNOWN"

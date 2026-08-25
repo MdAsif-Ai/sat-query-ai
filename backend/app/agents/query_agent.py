@@ -2,8 +2,7 @@ import re
 from typing import List, Dict, Any
 from loguru import logger
 
-from app.schemas.analysis import TaskType, Modality
-
+from app.schemas.enums import TaskType, Modality
 class QueryAgent:
     """
     Determines the task type and required tools based on the user's query and image metadata.

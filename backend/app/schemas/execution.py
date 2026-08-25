@@ -1,7 +1,8 @@
+# backend/app/schemas/execution.py
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 from app.schemas.models import ModelExecution
-from app.schemas.analysis import TaskType
+from app.schemas.enums import TaskType  # <-- IMPORT FROM HERE
 
 class AgentDecision(BaseModel):
     step_id: int
@@ -14,7 +15,7 @@ class ExecutionStep(BaseModel):
     step_id: int
     agent_decision: Optional[AgentDecision] = None
     model_execution: Optional[ModelExecution] = None
-    status: str  # e.g., "planning", "executing", "success", "failed"
+    status: str
     message: str
     timestamp: str
 

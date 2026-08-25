@@ -1,7 +1,8 @@
 from typing import List, Dict, Any
 from loguru import logger
 
-from app.schemas.analysis import ImageMetadata, Modality, TaskType
+from app.schemas.analysis import ImageMetadata
+from app.schemas.enums import Modality, TaskType
 from app.core.exceptions import (
     IncompatibleImagePairError, 
     InvalidImageError, 
