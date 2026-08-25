@@ -74,24 +74,37 @@ class GroundingDinoModel(BaseRemoteSensingModel):
         with torch.no_grad():
             outputs = self.model(**dino_inputs)
             
-        # 3. Post-process outputs
-        # target_sizes expects a list of tuples: (height, width)
+        # 3. Post-process — transformers 5.x changed box_threshold → threshold
         target_sizes = [image.size[::-1]]
-        
-        results = self.processor.post_process_grounded_object_detection(
-            outputs=outputs,
-            input_ids=dino_inputs["input_ids"],
-            box_threshold=box_threshold,
-            text_threshold=text_threshold,
-            target_sizes=target_sizes
-        )[0] # Get the first (and only) image result
-        
+        try:
+            results = self.processor.post_process_grounded_object_detection(
+                outputs=outputs,
+                input_ids=dino_inputs["input_ids"],
+                threshold=box_threshold,
+                target_sizes=target_sizes
+            )[0]
+        except TypeError:
+            results = self.processor.post_process_grounded_object_detection(
+                outputs=outputs,
+                input_ids=dino_inputs["input_ids"],
+                box_threshold=box_threshold,
+                text_threshold=text_threshold,
+                target_sizes=target_sizes
+            )[0]
+
         # 4. Format Output
         boxes = results["boxes"].cpu().numpy().tolist()
         scores = results["scores"].cpu().numpy().tolist()
-        labels = results["labels"] if isinstance(results["labels"], list) else results["labels"].cpu().numpy().tolist()
-        
-        # Compute an overall confidence based on the highest score
+        raw_labels = results["labels"]
+        labels = raw_labels if isinstance(raw_labels, list) else raw_labels.cpu().numpy().tolist()
+
+        # Secondary filter by text_threshold
+        if text_threshold < box_threshold:
+            filtered = [(b, s, l) for b, s, l in zip(boxes, scores, labels) if s >= text_threshold]
+            boxes = [x[0] for x in filtered]
+            scores = [x[1] for x in filtered]
+            labels = [x[2] for x in filtered]
+
         overall_confidence = max(scores) if scores else 0.0
         
         return {

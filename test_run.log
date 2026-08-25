@@ -1,38 +1,44 @@
-2026-08-25 13:29:27.294 | WARNING  | app.models.change_model:<module>:22 - Open-CD or mmengine is not installed. Change detection will fail.
-2026-08-25 13:29:27.316 | INFO     | app.models.manager:__init__:43 - ModelManager initialized. Models are registered but not yet loaded.
+2026-08-25 14:22:07.174 | WARNING  | app.models.change_model:<module>:22 - Open-CD or mmengine is not installed. Change detection will fail.
+2026-08-25 14:22:07.197 | INFO     | app.models.manager:__init__:43 - ModelManager initialized. Models are registered but not yet loaded.
 
 --- Initializing Database ---
-2026-08-25 13:29:27,460 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-08-25 13:29:27,461 INFO sqlalchemy.engine.Engine COMMIT
-2026-08-25 13:29:27.461 | INFO     | app.db.database:init_db:55 - Database initialized (tables created if missing).
-2026-08-25 13:29:27.504 | INFO     | app.models.manager:load_model:106 - Acquired lock. Loading model: geochat
-2026-08-25 13:29:27.572 | INFO     | app.models.geochat:load:34 - Loading MBZUAI/GeoChat-7B in 4-bit precision...
-/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/huggingface_hub/file_download.py:949: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
-  warnings.warn(
-2026-08-25 13:29:29.034 | ERROR    | app.models.geochat:load:54 - Failed to load GeoChat: The checkpoint you are trying to load has model type `geochat` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
-2026-08-25 13:29:29.034 | ERROR    | app.models.manager:load_model:156 - Failed to load model geochat: The checkpoint you are trying to load has model type `geochat` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
-Traceback (most recent call last):
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/configuration_auto.py", line 1117, in from_pretrained
-    config_class = CONFIG_MAPPING[config_dict["model_type"]]
-                   ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/configuration_auto.py", line 813, in __getitem__
-    raise KeyError(key)
-KeyError: 'geochat'
+2026-08-25 14:22:07,273 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-25 14:22:07,273 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-25 14:22:07.273 | INFO     | app.db.database:init_db:55 - Database initialized (tables created if missing).
+2026-08-25 14:22:07.320 | INFO     | app.models.manager:load_model:106 - Acquired lock. Loading model: geochat
+2026-08-25 14:22:07.331 | INFO     | app.models.geochat:load:33 - Loading MBZUAI/GeoChat-7B in 4-bit precision (LLaVA backend)...
+You are using a model of type geochat to instantiate a model of type llava. This is not supported for all configurations of models and can yield errors.
+WARNING: BNB_CUDA_VERSION=126 environment variable detected; loading libbitsandbytes_cuda126.so.
+This overrides automatic CUDA version selection.
+If this was unintended clear the variable and retry: unset BNB_CUDA_VERSION
 
-During handling of the above exception, another exception occurred:
-
+2026-08-25 14:22:28.553 | ERROR    | app.models.geochat:load:91 - Failed to load GeoChat: "normal_kernel_cpu" not implemented for 'Byte'
+2026-08-25 14:22:28.553 | ERROR    | app.models.manager:load_model:156 - Failed to load model geochat: "normal_kernel_cpu" not implemented for 'Byte'
 Traceback (most recent call last):
   File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/manager.py", line 135, in load_model
     model.load()
-  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/geochat.py", line 43, in load
-    self.model = AutoModelForCausalLM.from_pretrained(
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py", line 526, in from_pretrained
-    config, kwargs = AutoConfig.from_pretrained(
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/configuration_auto.py", line 1119, in from_pretrained
-    raise ValueError(
-ValueError: The checkpoint you are trying to load has model type `geochat` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
+  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/geochat.py", line 73, in load
+    self.model = LlavaForConditionalGeneration.from_pretrained(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 3960, in from_pretrained
+    ) = cls._load_pretrained_model(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4255, in _load_pretrained_model
+    model.apply(model._initialize_weights)
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1075, in apply
+    module.apply(fn)
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1075, in apply
+    module.apply(fn)
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1075, in apply
+    module.apply(fn)
+  [Previous line repeated 4 more times]
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1076, in apply
+    fn(self)
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 1819, in _initialize_weights
+    self._init_weights(module)
+  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/llava/modeling_llava.py", line 148, in _init_weights
+    module.weight.data.normal_(mean=0.0, std=std)
+NotImplementedError: "normal_kernel_cpu" not implemented for 'Byte'
 
 The above exception was the direct cause of the following exception:
 
@@ -42,113 +48,27 @@ Traceback (most recent call last):
   File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/manager.py", line 157, in load_model
     raise ModelUnavailableError(name) from e
 app.core.exceptions.ModelUnavailableError: Model 'geochat' is unavailable or failed to load.
-2026-08-25 13:29:29.034 | INFO     | app.models.manager:load_model:106 - Acquired lock. Loading model: grounding_dino
-2026-08-25 13:29:29.035 | INFO     | app.models.grounding_dino:load:31 - Loading IDEA-Research/grounding-dino-base...
-2026-08-25 13:29:31.083 | ERROR    | app.models.grounding_dino:load:43 - Failed to load Grounding DINO: The checkpoint you are trying to load has model type `grounding-dino` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
-2026-08-25 13:29:31.083 | ERROR    | app.models.manager:load_model:156 - Failed to load model grounding_dino: The checkpoint you are trying to load has model type `grounding-dino` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
-Traceback (most recent call last):
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/configuration_auto.py", line 1117, in from_pretrained
-    config_class = CONFIG_MAPPING[config_dict["model_type"]]
-                   ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/configuration_auto.py", line 813, in __getitem__
-    raise KeyError(key)
-KeyError: 'grounding-dino'
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/manager.py", line 135, in load_model
-    model.load()
-  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/grounding_dino.py", line 35, in load
-    self.model = AutoModelForZeroShotObjectDetection.from_pretrained(
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py", line 526, in from_pretrained
-    config, kwargs = AutoConfig.from_pretrained(
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/auto/configuration_auto.py", line 1119, in from_pretrained
-    raise ValueError(
-ValueError: The checkpoint you are trying to load has model type `grounding-dino` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/home/techpark-10/Documents/sat-query-ai/test_satquery.py", line 59, in run_tests
-    await model_manager.load_model("grounding_dino")
-  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/manager.py", line 157, in load_model
-    raise ModelUnavailableError(name) from e
-app.core.exceptions.ModelUnavailableError: Model 'grounding_dino' is unavailable or failed to load.
-2026-08-25 13:29:31.084 | INFO     | app.models.manager:load_model:106 - Acquired lock. Loading model: sam2
-2026-08-25 13:29:31.084 | INFO     | app.models.sam2:load:25 - Loading facebook/sam2-hiera-tiny using official SAM2 package...
-2026-08-25 13:29:31.136 | INFO     | app.models.sam2:load:42 - Using SAM2 checkpoint from HF cache: /home/techpark-10/.cache/huggingface/hub/models--facebook--sam2-hiera-tiny/blobs/65b50056e05bcb13694174f51bb6da89c894b57b75ccdf0ba6352c597c5d1125
-2026-08-25 13:29:31.141 | ERROR    | app.models.sam2:load:64 - Failed to load SAM 2: Cannot find primary config 'sam2.1/sam2.1_hiera_t.yaml'. Check that it's in your config search path.
-
-Config search path:
-	provider=hydra, path=pkg://hydra.conf
-	provider=main, path=pkg://sam2
-	provider=schema, path=structured://
-2026-08-25 13:29:31.141 | ERROR    | app.models.manager:load_model:156 - Failed to load model sam2: Cannot find primary config 'sam2.1/sam2.1_hiera_t.yaml'. Check that it's in your config search path.
-
-Config search path:
-	provider=hydra, path=pkg://hydra.conf
-	provider=main, path=pkg://sam2
-	provider=schema, path=structured://
-Traceback (most recent call last):
-  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/manager.py", line 135, in load_model
-    model.load()
-  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/sam2.py", line 54, in load
-    sam2_model = build_sam2(
-                 ^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/sam2/build_sam.py", line 90, in build_sam2
-    cfg = compose(config_name=config_file, overrides=hydra_overrides_extra)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/compose.py", line 38, in compose
-    cfg = gh.hydra.compose_config(
-          ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/hydra.py", line 594, in compose_config
-    cfg = self.config_loader.load_configuration(
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/config_loader_impl.py", line 142, in load_configuration
-    return self._load_configuration_impl(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/config_loader_impl.py", line 253, in _load_configuration_impl
-    defaults_list = create_defaults_list(
-                    ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/defaults_list.py", line 745, in create_defaults_list
-    defaults, tree = _create_defaults_list(
-                     ^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/defaults_list.py", line 715, in _create_defaults_list
-    defaults_tree = _create_defaults_tree(
-                    ^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/defaults_list.py", line 356, in _create_defaults_tree
-    ret = _create_defaults_tree_impl(
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/defaults_list.py", line 457, in _create_defaults_tree_impl
-    return _expand_virtual_root(repo, root, overrides, skip_missing)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/defaults_list.py", line 280, in _expand_virtual_root
-    subtree = _create_defaults_tree_impl(
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/defaults_list.py", line 464, in _create_defaults_tree_impl
-    config_not_found_error(repo=repo, tree=root)
-  File "/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/hydra/_internal/defaults_list.py", line 799, in config_not_found_error
-    raise MissingConfigException(
-hydra.errors.MissingConfigException: Cannot find primary config 'sam2.1/sam2.1_hiera_t.yaml'. Check that it's in your config search path.
-
-Config search path:
-	provider=hydra, path=pkg://hydra.conf
-	provider=main, path=pkg://sam2
-	provider=schema, path=structured://
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/home/techpark-10/Documents/sat-query-ai/test_satquery.py", line 77, in run_tests
-    await model_manager.load_model("sam2")
-  File "/home/techpark-10/Documents/sat-query-ai/backend/app/models/manager.py", line 157, in load_model
-    raise ModelUnavailableError(name) from e
-app.core.exceptions.ModelUnavailableError: Model 'sam2' is unavailable or failed to load.
-2026-08-25 13:29:31.142 | INFO     | app.models.manager:release_all:174 - Releasing all models from VRAM...
-2026-08-25 13:29:31.218 | DEBUG    | app.models.base:clear_gpu_memory:17 - Cleared GPU memory cache.
+2026-08-25 14:22:28.555 | INFO     | app.models.manager:load_model:106 - Acquired lock. Loading model: grounding_dino
+2026-08-25 14:22:28.556 | INFO     | app.models.grounding_dino:load:31 - Loading IDEA-Research/grounding-dino-base...
+/home/techpark-10/Documents/sat-query-ai/.venv/lib/python3.12/site-packages/transformers/models/grounding_dino/image_processing_grounding_dino.py:77: UserWarning: A NumPy version >=1.23.5 and <2.5.0 is required for this version of SciPy (detected version 2.5.2)
+  import scipy.special
+2026-08-25 14:22:32.586 | SUCCESS  | app.models.grounding_dino:load:41 - Grounding DINO model loaded successfully.
+2026-08-25 14:22:32.586 | SUCCESS  | app.models.manager:load_model:138 - Successfully loaded model: grounding_dino
+2026-08-25 14:22:32.586 | DEBUG    | app.models.base:infer:88 - Running inference with 'grounding_dino'...
+2026-08-25 14:22:33.020 | INFO     | app.models.manager:load_model:106 - Acquired lock. Loading model: sam2
+2026-08-25 14:22:33.021 | INFO     | app.models.sam2:load:27 - Loading facebook/sam2-hiera-tiny using official sam2 package...
+2026-08-25 14:22:33.064 | INFO     | app.models.sam2:load:43 - Using SAM2 checkpoint: /home/techpark-10/.cache/huggingface/hub/models--facebook--sam2-hiera-tiny/blobs/65b50056e05bcb13694174f51bb6da89c894b57b75ccdf0ba6352c597c5d1125 (148MB)
+2026-08-25 14:22:33.386 | SUCCESS  | app.models.sam2:load:64 - SAM 2 model loaded successfully.
+2026-08-25 14:22:33.386 | SUCCESS  | app.models.manager:load_model:138 - Successfully loaded model: sam2
+2026-08-25 14:22:33.386 | DEBUG    | app.models.base:infer:88 - Running inference with 'sam2'...
+2026-08-25 14:22:33.558 | INFO     | app.models.manager:release_all:174 - Releasing all models from VRAM...
+2026-08-25 14:22:33.559 | INFO     | app.models.base:unload:50 - Unloading model 'grounding_dino' from cuda...
+2026-08-25 14:22:33.689 | DEBUG    | app.models.base:clear_gpu_memory:17 - Cleared GPU memory cache.
+2026-08-25 14:22:33.689 | INFO     | app.models.base:unload:65 - Model 'grounding_dino' unloaded successfully.
+2026-08-25 14:22:33.689 | INFO     | app.models.base:unload:50 - Unloading model 'sam2' from cuda...
+2026-08-25 14:22:33.814 | DEBUG    | app.models.base:clear_gpu_memory:17 - Cleared GPU memory cache.
+2026-08-25 14:22:33.814 | INFO     | app.models.base:unload:65 - Model 'sam2' unloaded successfully.
+2026-08-25 14:22:33.937 | DEBUG    | app.models.base:clear_gpu_memory:17 - Cleared GPU memory cache.
 Database initialized successfully.
 Loaded test image: test_satellite.jpg (Size: (2848, 2136))
 
@@ -158,11 +78,15 @@ GeoChat test failed: Model 'geochat' is unavailable or failed to load.
 
 --- Testing Grounding DINO ---
 Loading Grounding DINO model...
-Grounding DINO test failed: Model 'grounding_dino' is unavailable or failed to load.
+Grounding DINO loaded in 4.03s.
+Running grounding inference for 'houses'...
+Grounding DINO detected 0 objects.
 
 --- Testing SAM 2 ---
 Loading SAM 2 model...
-SAM 2 test failed: Model 'sam2' is unavailable or failed to load.
+SAM 2 loaded in 0.37s.
+Running segmentation from box prompt: [100.0, 100.0, 300.0, 300.0]...
+SAM 2 completed successfully. Mask dimensions: (2136, 2848)
 
 --- Releasing all models ---
 VRAM cleared.
