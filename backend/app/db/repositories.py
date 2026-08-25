@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional, Dict, Any
-from sqlalchemy import String, DateTime, Text, Integer, Float, ForeignKey, JSON
+import uuid
+from sqlalchemy import String, DateTime, Text, Integer, Float, ForeignKey, JSON, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -127,6 +128,11 @@ class RequestRepository:
             req.images.extend(images)
             await self.session.flush()
 
+    async def get_request_by_id(self, request_id: str) -> Optional[AnalysisRequest]:
+        stmt = select(AnalysisRequest).where(AnalysisRequest.id == request_id)
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
 class ResultRepository:
     """Handles database operations for AnalysisResults and Evidence."""
     
@@ -157,6 +163,11 @@ class ResultRepository:
         await self.session.flush()
         return report
 
+    async def get_result_by_request(self, request_id: str) -> Optional[AnalysisResult]:
+        stmt = select(AnalysisResult).where(AnalysisResult.request_id == request_id)
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
+
 class ExecutionTraceRepository:
     """Handles database operations for Agent and Model executions."""
     
@@ -164,7 +175,6 @@ class ExecutionTraceRepository:
         self.session = session
 
     async def log_agent_start(self, request_id: str, agent_name: str) -> AgentExecution:
-        import uuid
         agent_exec = AgentExecution(id=str(uuid.uuid4()), request_id=request_id, agent_name=agent_name, status="running")
         self.session.add(agent_exec)
         await self.session.flush()
@@ -178,7 +188,6 @@ class ExecutionTraceRepository:
             await self.session.flush()
 
     async def log_model_execution(self, agent_exec_id: str, model_name: str, duration_ms: float, status: str, error: Optional[str] = None):
-        import uuid
         model_exec = ModelExecutionLog(
             id=str(uuid.uuid4()),
             agent_execution_id=agent_exec_id,
@@ -189,3 +198,13 @@ class ExecutionTraceRepository:
         )
         self.session.add(model_exec)
         await self.session.flush()
+
+    async def get_agents_by_request(self, request_id: str) -> List[AgentExecution]:
+        stmt = select(AgentExecution).where(AgentExecution.request_id == request_id)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_models_by_agent(self, agent_exec_id: str) -> List[ModelExecutionLog]:
+        stmt = select(ModelExecutionLog).where(ModelExecutionLog.agent_execution_id == agent_exec_id)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
