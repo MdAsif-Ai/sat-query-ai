@@ -223,10 +223,10 @@ export function RotatingEarth() {
     // 4. Animation Loop
     // -------------------------------------------------------------
     let animationFrameId: number;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
-      const elapsedTime = clock.getElapsedTime();
+      const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Update star twinkle uniform
       starMaterial.uniforms.uTime.value = elapsedTime;

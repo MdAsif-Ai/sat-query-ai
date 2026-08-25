@@ -342,10 +342,10 @@ export function AuthEarthSatelliteScene({ mode = 'login' }: AuthEarthSatelliteSc
     let animationFrameId: number;
     let orbitAngle = 0;
     let currentX = modeRef.current === 'login' ? -1.65 : 1.65;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
-      const elapsedTime = clock.getElapsedTime();
+      const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Smooth Earth horizontal positioning (left for login, right for register on desktop)
       const isDesktop = width >= 1024;

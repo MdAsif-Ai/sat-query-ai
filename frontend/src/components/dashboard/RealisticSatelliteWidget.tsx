@@ -220,10 +220,10 @@ export function RealisticSatelliteWidget() {
 
     // Animation Loop
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
-      const elapsedTime = clock.getElapsedTime();
+      const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Gentle floating / hovering motion
       satelliteGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.08;
